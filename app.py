@@ -261,7 +261,7 @@ st.markdown("""
 
 # Sidebar Navigation
 with st.sidebar:
-    st.markdown("### 🧭 Navigation & Modules")
+    st.markdown("### 🧭 Navigation")
     pages = [
         "1. Executive Overview & KPIs",
         "2. Multi-City Geospatial & Station Explorer",
@@ -269,25 +269,20 @@ with st.sidebar:
         "4. Mathematical Foundations Lab",
         "5. 24-Hour Predictive Early Warning Center",
         "6. Automated Pollution Alert Engine",
-        "7. Model Performance & Error Analysis",
-        "8. Architecture & Societal Impact"
+        "7. Model Performance & Error Analysis"
     ]
     page = st.radio("Go to Module:", pages, index=0)
     
     st.markdown("---")
-    st.markdown("### 📊 System Telemetry")
+    st.markdown("### 📊 Operational Telemetry")
     if audit_main:
         st.caption(f"**Dataset:** `{audit_main.get('file', 'city_day.csv')}`")
-        st.caption(f"**Validated Rows:** `{audit_main.get('rows_after_validation', 0):,}`")
-        st.caption(f"**Coverage:** `{audit_main.get('cities', 26)} Cities | 2015–2020`")
+        st.caption(f"**Validated Records:** `{audit_main.get('rows_after_validation', 0):,}`")
+        st.caption(f"**Coverage:** `{audit_main.get('cities', 26)} Cities (2015–2020)`")
     if ml_metadata and "model_name" in ml_metadata:
         st.caption(f"**Active Model:** `{ml_metadata.get('model_name')}`")
-        st.caption(f"**Test R² Score:** `{ml_metadata.get('model_comparison', [{}])[0].get('R2', 0.8508):.4f}`")
+        st.caption(f"**Held-out R²:** `{ml_metadata.get('model_comparison', [{}])[0].get('R2', 0.8508):.4f}`")
         st.caption(f"**Forecast MAE:** `±{ml_metadata.get('model_comparison', [{}])[0].get('MAE', 19.66):.2f}` AQI")
-    
-    st.markdown("---")
-    st.markdown("🔗 **GitHub Source Repository:**")
-    st.markdown("[Subu2006/Smart-Air-Quality-Prediction-and-Pollution-Alert-System](https://github.com/Subu2006/Smart-Air-Quality-Prediction-and-Pollution-Alert-System)")
 
 
 # ==============================================================================
@@ -793,8 +788,8 @@ elif page == "4. Mathematical Foundations Lab":
             <div class="info-card">
                 <h4>Formal Statistical Test Results:</h4>
                 <ul>
-                    <li><strong>Null Hypothesis ($H_0$):</strong> $\\mu_{winter} = \\mu_{monsoon}$ (No difference between winter and monsoon means).</li>
-                    <li><strong>Alternative Hypothesis ($H_1$):</strong> $\\mu_{winter} > \\mu_{monsoon}$ (Winter pollution is strictly higher).</li>
+                    <li><strong>Null Hypothesis ($H_0$):</strong> $\\mu_{{winter}} = \\mu_{{monsoon}}$ (No difference between winter and monsoon means).</li>
+                    <li><strong>Alternative Hypothesis ($H_1$):</strong> $\\mu_{{winter}} > \\mu_{{monsoon}}$ (Winter pollution is strictly higher).</li>
                     <li><strong>Welch's $t$-statistic:</strong> <code>t = {hypo['t_statistic']}</code></li>
                     <li><strong>Calculated $p$-value:</strong> <code>p < 1e-15</code> (Statistically Significant at $\\alpha = 0.001$)</li>
                     <li><strong>Mann-Whitney $U$ Test:</strong> <code>U = {hypo['mann_whitney_u']:.0f}</code> ($p < 1e-15$)</li>
@@ -1103,58 +1098,3 @@ elif page == "7. Model Performance & Error Analysis":
         fig_imp.update_traces(textposition="outside")
         render_plotly(fig_imp)
 
-
-# ==============================================================================
-# PAGE 8: ARCHITECTURE & SOCIETAL IMPACT
-# ==============================================================================
-elif page == "8. Architecture & Societal Impact":
-    st.markdown("## 🏛️ System Architecture, Deployment & Societal Impact")
-    
-    st.markdown("""
-    ### 🎓 Academic & Engineering Profile
-    - **Course:** CSE273: Foundations of Machine Learning (L:2, T:0, P:2, Credits:3)
-    - **Student Author:** Subrat Panigrahi | Registration Number: 26143073 | Section: N1
-    - **Institution:** Lovely School of Computer Science & Engineering, Lovely Professional University
-    - **Official GitHub Link:** [https://github.com/Subu2006/Smart-Air-Quality-Prediction-and-Pollution-Alert-System](https://github.com/Subu2006/Smart-Air-Quality-Prediction-and-Pollution-Alert-System)
-    """)
-
-    st.markdown("---")
-    st.markdown("### 🏗️ Enterprise Architecture Flowchart")
-    st.markdown("""
-    ```
-    ┌────────────────────────────────────────────────────────────────────────┐
-    │                      DATA INGESTION & AUDITING LAYER                   │
-    │  • CPCB Continuous Monitoring Data (29,531 records across 26 cities)   │
-    │  • Non-Zero Missingness Preservation | Sensor Saturation Audit (>500)  │
-    └───────────────────────────────────┬────────────────────────────────────┘
-                                        │
-    ┌───────────────────────────────────▼────────────────────────────────────┐
-    │                   FEATURE ENGINEERING & MATHEMATICAL LAB               │
-    │  • Single-Day Lag Vectors: [AQI_t, PM2.5_t, PM10_t, NO2_t, SO2_t, CO_t] │
-    │  • Cyclical Calendar Harmonics: sin(2π d/365.25), cos(2π d/365.25)     │
-    │  • Mathematical Core: PCA Eigenvalue Decomposition, Welch's t-test     │
-    └───────────────────────────────────┬────────────────────────────────────┘
-                                        │
-    ┌───────────────────────────────────▼────────────────────────────────────┐
-    │               MACHINE LEARNING & CHRONOLOGICAL VALIDATION              │
-    │  • Split: Train (15,655 rows < May 2019) | Test (8,688 rows ≥ May 2019) │
-    │  • Multi-Model Benchmark: Baseline, OLS, Ridge, Decision Tree, RF, GBDT │
-    │  • Best Model: Random Forest (R² = 0.8508, MAE = 19.66, Cat Acc = 75.8%)│
-    └───────────────────────────────────┬────────────────────────────────────┘
-                                        │
-    ┌───────────────────────────────────▼────────────────────────────────────┐
-    │             PREDICTIVE EARLY WARNING & AUTOMATED ALERT ENGINE          │
-    │  • 1-Day Ahead Forecast (t+1) with 95% Confidence Bounds (±77.68 AQI)  │
-    │  • Automated CPCB Tiered Classification (Good to Severe Alerts)        │
-    │  • Multi-Channel Public Health Demographic Advisories & Dispatcher     │
-    └────────────────────────────────────────────────────────────────────────┘
-    ```
-    """)
-
-    st.markdown("---")
-    st.markdown("""
-    ### 🛡️ Ethical Boundaries & Responsible Environmental AI
-    1. **Non-Statutory Advisory:** Predictive model outputs and alert tags provide analytical decision support and do not substitute for official statutory advisories issued by CPCB or IMD.
-    2. **No Clinical Diagnostic Claims:** Air quality hazard categories reflect atmospheric pollutant concentrations and should not be used as clinical diagnostic criteria.
-    3. **Transparency in Data Quality:** Extreme values (>500 AQI) and telemetry gaps are explicitly retained and audited rather than cosmetically smoothed.
-    """)
