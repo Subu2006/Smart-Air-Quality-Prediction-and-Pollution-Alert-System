@@ -1,10 +1,10 @@
 """Smart Air Quality Prediction and Pollution Alert System.
-Interactive Streamlit Application showcasing:
-1. Executive National Overview & Real-Time Intelligence KPIs
-2. Multi-City Geospatial & Longitudinal Explorer (with CPCB station mapping)
+Enterprise Interactive Intelligence Application featuring:
+1. Executive National Overview & Live Intelligence KPIs
+2. Multi-City Geospatial & Longitudinal Explorer (Interactive Map & Profiles)
 3. Exploratory Data Analysis & Statistical Moments Lab
-4. Mathematical & Machine Learning Foundations Lab (PCA, Eigenvalues, Loss & Gradient Descent Optimization, Welch's t-test)
-5. 24-Hour Predictive Early Warning Center (with 95% Confidence Bounds & Advisories)
+4. Mathematical Foundations Lab (PCA, Eigenvalues, Loss & Gradient Descent Optimization)
+5. 24-Hour Predictive Early Warning Center (with 95% Confidence Bounds & Gauge)
 6. Automated CPCB Pollution Alert Engine & Dispatch Simulator
 7. Model Diagnostics, Benchmarking Matrix & Residual Error Parity Analysis
 8. System Architecture, Real-World Deployment & Society Impact
@@ -14,10 +14,11 @@ import json
 import os
 import sys
 from pathlib import Path
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import streamlit as st
 
 # Configure root path
@@ -35,7 +36,7 @@ from smart_air_quality.models import load_model, make_single_prediction
 
 # Page Configuration
 st.set_page_config(
-    page_title="Smart Air Quality Prediction & Alert System",
+    page_title="Smart Air Quality Prediction & Alert Platform",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -44,79 +45,126 @@ st.set_page_config(
 # Custom High-End Styling CSS
 st.markdown("""
 <style>
-    /* Global Styling */
+    /* Global Typography & Background */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
     .main {
-        background-color: #F8FAFC;
-    }
-    h1, h2, h3 {
-        color: #163447;
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        background: #F8FAFC;
     }
     
-    /* Header Card */
-    .header-box {
-        background: linear-gradient(135deg, #163447 0%, #167E78 100%);
-        color: white;
-        padding: 24px 30px;
-        border-radius: 12px;
+    /* Executive Header Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, #0F172A 0%, #163447 50%, #167E78 100%);
+        border-radius: 16px;
+        padding: 28px 36px;
+        color: #FFFFFF;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
         margin-bottom: 24px;
-        box-shadow: 0 4px 14px rgba(22, 52, 71, 0.15);
+        position: relative;
+        overflow: hidden;
     }
-    .header-box h1 {
-        color: #FFFFFF !important;
+    .hero-banner::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(22, 126, 120, 0.4) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .hero-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
         margin: 0 0 8px 0;
-        font-size: 1.85rem;
-        font-weight: 700;
+        color: #FFFFFF !important;
     }
-    .header-box p {
-        color: #DDF3EC;
+    .hero-sub {
+        font-size: 1.0rem;
+        color: #E2E8F0;
         margin: 0;
-        font-size: 0.95rem;
+        font-weight: 400;
     }
     
-    /* Metric Cards */
-    div[data-testid="stMetric"] {
-        background-color: #FFFFFF;
+    /* Modern Glass KPI Cards */
+    .kpi-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .kpi-card {
+        background: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 14px 18px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        border-radius: 14px;
+        padding: 20px 22px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        overflow: hidden;
     }
-    div[data-testid="stMetricLabel"] {
-        color: #5E7480;
+    .kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    }
+    .kpi-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: #167E78;
+    }
+    .kpi-label {
+        font-size: 0.82rem;
         font-weight: 600;
-        font-size: 0.85rem;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
     }
-    div[data-testid="stMetricValue"] {
-        color: #163447;
-        font-weight: 700;
+    .kpi-value {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: #0F172A;
+        line-height: 1.2;
+    }
+    .kpi-sub {
+        font-size: 0.78rem;
+        color: #94A3B8;
+        margin-top: 4px;
+    }
+    
+    /* Callout & Alert Card */
+    .info-card {
+        background: #FFFFFF;
+        border-left: 4px solid #167E78;
+        border-radius: 0 12px 12px 0;
+        padding: 16px 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        margin: 16px 0;
     }
     
     /* Badges */
-    .badge-cpcb {
+    .cpcb-tag {
         display: inline-block;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 0.82rem;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
         color: white;
     }
-    .badge-good { background-color: #10B981; }
-    .badge-satisfactory { background-color: #84CC16; }
-    .badge-moderate { background-color: #FBBF24; color: #163447 !important; }
-    .badge-poor { background-color: #F97316; }
-    .badge-very-poor { background-color: #EF4444; }
-    .badge-severe { background-color: #7F1D1D; }
-    
-    /* Callout Card */
-    .callout-card {
-        background-color: #FFFFFF;
-        border-left: 5px solid #167E78;
-        padding: 16px 20px;
-        border-radius: 0 8px 8px 0;
-        margin: 15px 0;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-    }
+    .tag-good { background: #10B981; }
+    .tag-satisfactory { background: #84CC16; }
+    .tag-moderate { background: #FBBF24; color: #1E293B !important; }
+    .tag-poor { background: #F97316; }
+    .tag-very-poor { background: #EF4444; }
+    .tag-severe { background: #7F1D1D; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -140,7 +188,10 @@ def load_main_dataset():
 def load_station_metadata():
     coord_path = ROOT / "data/raw/StationCoordinates.csv"
     if coord_path.exists():
-        return pd.read_csv(coord_path)
+        try:
+            return pd.read_csv(coord_path)
+        except Exception:
+            return pd.DataFrame()
     return pd.DataFrame()
 
 
@@ -162,43 +213,42 @@ df_main, audit_main = load_main_dataset()
 df_stations = load_station_metadata()
 ml_model, ml_metadata = get_trained_model()
 
-# Header Banner
+# Hero Header
 st.markdown("""
-<div class="header-box">
-    <h1>🌍 Smart Air Quality Prediction & Pollution Alert System</h1>
-    <p>Enterprise Environmental Intelligence Platform | Grounded in CSE273 Machine Learning Foundations | CPCB & WHO Compliant</p>
+<div class="hero-banner">
+    <div class="hero-title">🌍 Smart Air Quality Prediction & Early Warning System</div>
+    <div class="hero-sub">Enterprise Machine Learning Platform | Grounded in CSE273 Academic Foundations | CPCB & WHO Standardized</div>
 </div>
 """, unsafe_allow_html=True)
 
 # Sidebar Navigation
 with st.sidebar:
-    st.markdown("### 🧭 System Navigation")
+    st.markdown("### 🧭 Navigation & Modules")
     pages = [
         "1. Executive Overview & KPIs",
         "2. Multi-City Geospatial Explorer",
         "3. Exploratory Data Analysis Lab",
-        "4. Mathematical & ML Foundations Lab",
+        "4. Mathematical Foundations Lab",
         "5. 24-Hour Predictive Early Warning Center",
-        "6. Pollution Alert Engine & Dispatcher",
+        "6. Automated Pollution Alert Engine",
         "7. Model Performance & Error Analysis",
         "8. Architecture & Societal Impact"
     ]
-    page = st.radio("Go to Section:", pages, index=0)
+    page = st.radio("Go to Module:", pages, index=0)
     
     st.markdown("---")
-    st.markdown("### 📊 Active System Metadata")
+    st.markdown("### 📊 System Telemetry")
     if audit_main:
-        st.markdown(f"**Data File:** `{audit_main.get('file', 'N/A')}`")
-        st.markdown(f"**Total Records:** `{audit_main.get('rows_after_validation', 0):,}`")
-        st.markdown(f"**Monitored Cities:** `{audit_main.get('cities', 0)}`")
-        st.markdown(f"**Date Range:** `{audit_main.get('date_min', 'N/A')}` to `{audit_main.get('date_max', 'N/A')}`")
+        st.caption(f"**Dataset:** `{audit_main.get('file', 'city_day.csv')}`")
+        st.caption(f"**Validated Rows:** `{audit_main.get('rows_after_validation', 0):,}`")
+        st.caption(f"**Coverage:** `{audit_main.get('cities', 26)} Cities | 2015–2020`")
     if ml_metadata and "model_name" in ml_metadata:
-        st.markdown(f"**Active Model:** `{ml_metadata.get('model_name')}`")
-        st.markdown(f"**Validation $R^2$:** `{ml_metadata.get('model_comparison', [{}])[0].get('R2', 0.8508):.4f}`")
-        st.markdown(f"**Forecast MAE:** `±{ml_metadata.get('model_comparison', [{}])[0].get('MAE', 19.66):.2f}` AQI")
+        st.caption(f"**Active Model:** `{ml_metadata.get('model_name')}`")
+        st.caption(f"**Test R² Score:** `{ml_metadata.get('model_comparison', [{}])[0].get('R2', 0.8508):.4f}`")
+        st.caption(f"**Forecast MAE:** `±{ml_metadata.get('model_comparison', [{}])[0].get('MAE', 19.66):.2f}` AQI")
     
     st.markdown("---")
-    st.markdown("🔗 **GitHub Repository:**")
+    st.markdown("🔗 **GitHub Source Repository:**")
     st.markdown("[Subu2006/Smart-Air-Quality-Prediction-System](https://github.com/Subu2006/Smart-Air-Quality-Prediction-and-Pollution-Alert-System)")
 
 
@@ -206,60 +256,122 @@ with st.sidebar:
 # PAGE 1: EXECUTIVE OVERVIEW & KPIS
 # ==============================================================================
 if page == "1. Executive Overview & KPIs":
-    st.markdown("## 🌐 National Air Quality Overview & Key Performance Indicators")
+    st.markdown("## 🌐 Executive National Overview & Real-Time Intelligence")
     st.markdown(
-        "Real-time operational dashboard synthesizing national atmospheric measurements across 26 Indian metropolitan centers, "
-        "supervised machine learning performance health, and standardized CPCB pollution classifications."
+        "Continuous atmospheric intelligence synthesized across 26 major Indian urban monitoring regions, "
+        "paired with supervised machine learning evaluation and official CPCB public health severity tiers."
     )
 
-    kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
-    with kpi1:
-        st.metric("Total Observations", f"{len(df_main):,}", help="Validated historical city-day records in dataset")
-    with kpi2:
-        st.metric("Monitored Cities", f"{df_main['City'].nunique() if not df_main.empty else 0}", help="Continuous monitoring network across India")
-    with kpi3:
-        valid_aqi = df_main["AQI"].dropna()
-        st.metric("Historical Mean AQI", f"{valid_aqi.mean():.1f}", help="Average composite index (Moderate band = 101-200)")
-    with kpi4:
-        best_r2 = ml_metadata.get("model_comparison", [{}])[0].get("R2", 0.8508) if ml_metadata else 0.8508
-        st.metric("Model Test R² Score", f"{best_r2:.4f}", help="Variance explained by Random Forest on out-of-sample test split")
-    with kpi5:
-        best_mae = ml_metadata.get("model_comparison", [{}])[0].get("MAE", 19.66) if ml_metadata else 19.66
-        st.metric("Forecast MAE", f"±{best_mae:.2f}", help="Mean Absolute Error in native AQI points")
+    valid_aqi = df_main["AQI"].dropna() if not df_main.empty else pd.Series([166.5])
+    best_r2 = ml_metadata.get("model_comparison", [{}])[0].get("R2", 0.8508) if ml_metadata else 0.8508
+    best_mae = ml_metadata.get("model_comparison", [{}])[0].get("MAE", 19.66) if ml_metadata else 19.66
 
-    st.markdown("---")
+    # Glass KPI Grid
+    st.markdown(f"""
+    <div class="kpi-container">
+        <div class="kpi-card">
+            <div class="kpi-label">Total Observations</div>
+            <div class="kpi-value">{len(df_main):,}</div>
+            <div class="kpi-sub">Validated multi-city records</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Monitored Cities</div>
+            <div class="kpi-value">{df_main['City'].nunique() if not df_main.empty else 26}</div>
+            <div class="kpi-sub">Urban industrial corridors</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">National Mean AQI</div>
+            <div class="kpi-value">{valid_aqi.mean():.1f}</div>
+            <div class="kpi-sub">Moderate tier (101–200)</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Random Forest R²</div>
+            <div class="kpi-value">{best_r2:.4f}</div>
+            <div class="kpi-sub">Out-of-sample variance</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Forecast MAE</div>
+            <div class="kpi-value">±{best_mae:.2f}</div>
+            <div class="kpi-sub">Native AQI index points</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col_chart1, col_chart2 = st.columns([1.3, 1])
     
-    col_left, col_right = st.columns([1.4, 1])
-    with col_left:
-        st.markdown("### 📈 National AQI Category Distribution")
-        fig_cat = ROOT / "reports/figures/fig08_cpcb_category_distribution.png"
-        if fig_cat.exists():
-            st.image(str(fig_cat), use_container_width=True)
-        else:
-            cat_counts = df_main["AQI_Bucket"].value_counts()
-            fig, ax = plt.subplots(figsize=(6, 4))
-            cat_counts.plot(kind="pie", autopct="%1.1f%%", ax=ax, cmap="Set2")
-            st.pyplot(fig)
+    with col_chart1:
+        st.markdown("### 🍩 National AQI Category Distribution (2015–2020)")
+        cat_counts = df_main["AQI_Bucket"].value_counts()
+        cpcb_order = ["Good", "Satisfactory", "Moderate", "Poor", "Very Poor", "Severe"]
+        cpcb_colors = {
+            "Good": "#10B981", "Satisfactory": "#84CC16", "Moderate": "#FBBF24",
+            "Poor": "#F97316", "Very Poor": "#EF4444", "Severe": "#7F1D1D"
+        }
+        ordered_df = pd.DataFrame({
+            "Category": [c for c in cpcb_order if c in cat_counts],
+            "Days": [cat_counts[c] for c in cpcb_order if c in cat_counts]
+        })
+        
+        fig_donut = px.pie(
+            ordered_df,
+            names="Category",
+            values="Days",
+            hole=0.55,
+            color="Category",
+            color_discrete_map=cpcb_colors
+        )
+        fig_donut.update_traces(
+            textinfo="percent+label",
+            hoverinfo="label+value+percent",
+            marker=dict(line=dict(color="#FFFFFF", width=2))
+        )
+        fig_donut.update_layout(
+            showlegend=False,
+            margin=dict(t=20, b=20, l=20, r=20),
+            height=340
+        )
+        st.plotly_chart(fig_donut, use_container_width=True)
 
-    with col_right:
-        st.markdown("### 🏷️ CPCB Air Quality Index Scale")
+    with col_chart2:
+        st.markdown("### 🏷️ CPCB Air Quality Index Standards")
         st.markdown("""
-        | Category | AQI Range | Public Health Impact |
+        | Category | AQI Range | Health Advisory & Population Impact |
         | :--- | :---: | :--- |
-        | <span class="badge-cpcb badge-good">Good</span> | 0 – 50 | Minimal impact; clean atmospheric state |
-        | <span class="badge-cpcb badge-satisfactory">Satisfactory</span> | 51 – 100 | Minor discomfort to hypersensitive individuals |
-        | <span class="badge-cpcb badge-moderate">Moderate</span> | 101 – 200 | Breathing discomfort to people with lung/heart conditions |
-        | <span class="badge-cpcb badge-poor">Poor</span> | 201 – 300 | Discomfort to general public upon prolonged exposure |
-        | <span class="badge-cpcb badge-very-poor">Very Poor</span> | 301 – 400 | Respiratory illness upon prolonged exertion |
-        | <span class="badge-cpcb badge-severe">Severe</span> | 401 – 500+ | Serious impact on healthy adults; emergency status |
+        | <span class="cpcb-tag tag-good">Good</span> | 0 – 50 | Minimal health impact; pristine atmosphere |
+        | <span class="cpcb-tag tag-satisfactory">Satisfactory</span> | 51 – 100 | Minor discomfort to hypersensitive individuals |
+        | <span class="cpcb-tag tag-moderate">Moderate</span> | 101 – 200 | Discomfort to individuals with asthma/COPD |
+        | <span class="cpcb-tag tag-poor">Poor</span> | 201 – 300 | Discomfort to most citizens on prolonged exposure |
+        | <span class="cpcb-tag tag-very-poor">Very Poor</span> | 301 – 400 | Respiratory illness on prolonged exertion |
+        | <span class="cpcb-tag tag-severe">Severe</span> | 401 – 500+ | Serious health impacts on healthy population |
         """, unsafe_allow_html=True)
-        st.info("💡 **Scientific Basis:** Under CPCB guidelines, AQI is computed from the maximum sub-index of criteria pollutants (PM2.5, PM10, NO2, SO2, CO, O3, NH3).")
 
     st.markdown("---")
-    st.markdown("### 🏙️ Top 10 Most Polluted Cities vs Cleanest Cities")
-    fig_city = ROOT / "reports/figures/fig04_city_pollution_rankings.png"
-    if fig_city.exists():
-        st.image(str(fig_city), use_container_width=True)
+    st.markdown("### 🏙️ Top 10 Most Polluted vs Top 5 Cleanest Cities (Mean Historical AQI)")
+    
+    city_means = df_main.groupby("City")["AQI"].mean().dropna().sort_values(ascending=False)
+    top_and_clean = pd.concat([city_means.head(10), city_means.tail(5)]).reset_index()
+    top_and_clean.columns = ["City", "Mean_AQI"]
+    top_and_clean["Status"] = ["Most Polluted"] * 10 + ["Cleanest"] * 5
+    
+    fig_cities = px.bar(
+        top_and_clean,
+        x="Mean_AQI",
+        y="City",
+        orientation="h",
+        color="Status",
+        color_discrete_map={"Most Polluted": "#EF4444", "Cleanest": "#10B981"},
+        text=top_and_clean["Mean_AQI"].apply(lambda v: f"{v:.1f}"),
+        category_orders={"City": top_and_clean["City"].tolist()[::-1]}
+    )
+    fig_cities.update_layout(
+        xaxis_title="Historical Average AQI",
+        yaxis_title="City",
+        height=450,
+        margin=dict(t=20, b=20, l=20, r=20),
+        legend_title="Geographic Group"
+    )
+    fig_cities.update_traces(textposition="outside")
+    st.plotly_chart(fig_cities, use_container_width=True)
 
 
 # ==============================================================================
@@ -268,147 +380,228 @@ if page == "1. Executive Overview & KPIs":
 elif page == "2. Multi-City Geospatial Explorer":
     st.markdown("## 🏙️ Multi-City Geospatial & Longitudinal Explorer")
     st.markdown(
-        "Interactive geospatial mapping of continuous monitoring stations across Indian states paired with granular "
-        "longitudinal time profiles and seasonal cycles."
+        "Interactive geospatial mapping of 230 continuous ambient air monitoring stations across India, "
+        "paired with granular multi-pollutant time profiles and seasonal boxplot distributions."
     )
 
-    # Geospatial Station Map
+    # Interactive Geospatial Map
     if not df_stations.empty and "Latitude" in df_stations.columns and "Longitude" in df_stations.columns:
-        valid_coords = df_stations.dropna(subset=["Latitude", "Longitude"]).copy()
-        valid_coords = valid_coords.rename(columns={"Latitude": "latitude", "Longitude": "longitude"})
-        st.markdown(f"### 🗺️ Continuous Ambient Air Quality Monitoring Stations ({len(valid_coords)} Locations)")
-        st.map(valid_coords[["latitude", "longitude"]], zoom=4)
-        st.caption("📍 Geocoded monitoring stations maintained by Central and State Pollution Control Boards (CPCB / SPCBs).")
+        valid_stations = df_stations.dropna(subset=["Latitude", "Longitude"]).copy()
+        st.markdown(f"### 🗺️ Continuous Ambient Monitoring Stations ({len(valid_stations)} Locations)")
+        
+        fig_map = px.scatter_geo(
+            valid_stations,
+            lat="Latitude",
+            lon="Longitude",
+            hover_name="StationName",
+            hover_data={"City": True, "State": True, "Latitude": ":.3f", "Longitude": ":.3f"},
+            color_discrete_sequence=["#167E78"],
+            scope="asia"
+        )
+        fig_map.update_geos(
+            center=dict(lat=22.5, lon=82.5),
+            projection_scale=3.8,
+            showcoastlines=True,
+            showland=True,
+            landcolor="#F1F5F9",
+            showocean=True,
+            oceancolor="#E2E8F0"
+        )
+        fig_map.update_layout(
+            height=480,
+            margin=dict(t=10, b=10, l=10, r=10)
+        )
+        st.plotly_chart(fig_map, use_container_width=True)
         st.markdown("---")
 
     if not df_main.empty:
         cities = sorted(df_main["City"].unique())
         c1, c2, c3 = st.columns([1.5, 1.5, 1])
         with c1:
-            selected_city = st.selectbox("Select City to Explore:", cities, index=cities.index("Delhi") if "Delhi" in cities else 0)
+            sel_city = st.selectbox("Select Target City:", cities, index=cities.index("Delhi") if "Delhi" in cities else 0)
         with c2:
             pollutants = ["AQI", "PM2.5", "PM10", "NO2", "SO2", "CO", "O3"]
-            selected_pollutant = st.selectbox("Select Criteria Parameter:", pollutants, index=0)
+            sel_pollutant = st.selectbox("Select Criteria Parameter:", pollutants, index=0)
         with c3:
-            year_options = ["All Years"] + sorted(list(df_main["Date"].dt.year.dropna().unique().astype(int)))
-            selected_year = st.selectbox("Filter Historical Year:", year_options, index=0)
+            year_opts = ["All Years"] + sorted(list(df_main["Date"].dt.year.dropna().unique().astype(int)))
+            sel_year = st.selectbox("Filter Observation Year:", year_opts, index=0)
 
-        city_df = df_main[df_main["City"] == selected_city].copy()
-        if selected_year != "All Years":
-            city_df = city_df[city_df["Date"].dt.year == int(selected_year)]
+        city_df = df_main[df_main["City"] == sel_city].sort_values("Date").copy()
+        if sel_year != "All Years":
+            city_df = city_df[city_df["Date"].dt.year == int(sel_year)]
 
-        # KPI row for selected city
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Total Valid Days", f"{len(city_df):,}")
-        with col2:
-            st.metric(f"Mean {selected_pollutant}", f"{city_df[selected_pollutant].mean():.1f}")
-        with col3:
-            st.metric(f"Peak {selected_pollutant}", f"{city_df[selected_pollutant].max():.1f}")
-        with col4:
-            severe_count = (city_df["AQI"] > 400).sum()
-            st.metric("Severe Days (AQI > 400)", f"{severe_count:,}")
+        # Check if pollutant is monitored
+        valid_series = city_df[sel_pollutant].dropna()
+        if valid_series.empty:
+            st.warning(f"⚠️ **Monitoring Notice:** Parameter `{sel_pollutant}` is not continuously monitored at stations in {sel_city}.")
+        else:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Valid Observations", f"{len(valid_series):,}")
+            with col2:
+                st.metric(f"Mean {sel_pollutant}", f"{valid_series.mean():.1f}")
+            with col3:
+                st.metric(f"Peak {sel_pollutant}", f"{valid_series.max():.1f}")
+            with col4:
+                severe_days = (city_df["AQI"] > 400).sum() if "AQI" in city_df.columns else 0
+                st.metric("Severe Days (AQI > 400)", f"{severe_days:,}")
 
-        # Time series chart with rolling average
-        st.markdown(f"### 📈 Longitudinal Profile: {selected_city} — {selected_pollutant}")
-        city_df["Rolling7"] = city_df[selected_pollutant].rolling(7, min_periods=1).mean()
-        
-        fig, ax = plt.subplots(figsize=(12, 4.8))
-        ax.plot(city_df["Date"], city_df[selected_pollutant], color="#CBD5E1", linewidth=0.9, alpha=0.6, label="Daily Observation")
-        ax.plot(city_df["Date"], city_df["Rolling7"], color="#167E78", linewidth=2.0, label="7-Day Moving Average")
-        ax.set_title(f"{selected_pollutant} Longitudinal Trajectory for {selected_city}", fontsize=12, fontweight="bold", color="#163447")
-        ax.set_ylabel(f"{selected_pollutant} Concentration / Index", fontsize=10, fontweight="bold")
-        ax.grid(True, linestyle="--", alpha=0.5)
-        
-        if selected_pollutant == "AQI":
-            ax.axhline(200, color="#FBBF24", linestyle="--", label="Moderate (200)")
-            ax.axhline(300, color="#F97316", linestyle="--", label="Poor (300)")
-            ax.axhline(400, color="#EF4444", linestyle="--", label="Severe (400)")
-        ax.legend(loc="upper right", frameon=True, facecolor="white")
-        st.pyplot(fig)
+            # Plotly Interactive Time Series
+            city_df["Rolling7"] = city_df[sel_pollutant].rolling(7, min_periods=1).mean()
+            
+            fig_ts = go.Figure()
+            fig_ts.add_trace(go.Scatter(
+                x=city_df["Date"],
+                y=city_df[sel_pollutant],
+                mode="lines",
+                name="Daily Observation",
+                line=dict(color="#CBD5E1", width=1),
+                opacity=0.7
+            ))
+            fig_ts.add_trace(go.Scatter(
+                x=city_df["Date"],
+                y=city_df["Rolling7"],
+                mode="lines",
+                name="7-Day Moving Avg",
+                line=dict(color="#167E78", width=2.5)
+            ))
+            
+            if sel_pollutant == "AQI":
+                fig_ts.add_hline(y=200, line_dash="dash", line_color="#FBBF24", annotation_text="Moderate (200)")
+                fig_ts.add_hline(y=300, line_dash="dash", line_color="#F97316", annotation_text="Poor (300)")
+                fig_ts.add_hline(y=400, line_dash="dash", line_color="#EF4444", annotation_text="Severe (400)")
 
-        # Monthly seasonal boxplot
-        st.markdown(f"### 📅 Seasonal Cycle & Monthly Boxplot for {selected_city}")
-        city_df["Month"] = city_df["Date"].dt.strftime("%b")
-        month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-        fig2, ax2 = plt.subplots(figsize=(11, 4))
-        sns.boxplot(data=city_df, x="Month", y=selected_pollutant, order=month_order, palette="mako", ax=ax2)
-        ax2.set_title(f"Monthly Distribution of {selected_pollutant} in {selected_city}", fontsize=11, fontweight="bold", color="#163447")
-        ax2.grid(True, linestyle="--", alpha=0.5, axis="y")
-        st.pyplot(fig2)
+            fig_ts.update_layout(
+                title=f"{sel_pollutant} Longitudinal Trajectory — {sel_city}",
+                xaxis_title="Observation Date",
+                yaxis_title=f"{sel_pollutant} Concentration / Index",
+                hovermode="x unified",
+                height=420,
+                margin=dict(t=40, b=20, l=20, r=20)
+            )
+            st.plotly_chart(fig_ts, use_container_width=True)
+
+            # Monthly Boxplots in Plotly
+            city_df["MonthName"] = city_df["Date"].dt.strftime("%b")
+            month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            
+            fig_box = px.box(
+                city_df.dropna(subset=[sel_pollutant]),
+                x="MonthName",
+                y=sel_pollutant,
+                category_orders={"MonthName": month_order},
+                color_discrete_sequence=["#167E78"]
+            )
+            fig_box.update_layout(
+                title=f"Monthly Seasonal Distribution of {sel_pollutant} in {sel_city}",
+                xaxis_title="Month",
+                yaxis_title=f"{sel_pollutant}",
+                height=380,
+                margin=dict(t=40, b=20, l=20, r=20)
+            )
+            st.plotly_chart(fig_box, use_container_width=True)
 
 
 # ==============================================================================
 # PAGE 3: EXPLORATORY DATA ANALYSIS LAB
 # ==============================================================================
 elif page == "3. Exploratory Data Analysis Lab":
-    st.markdown("## 🔬 Exploratory Data Analysis & Statistical Analytics Lab")
+    st.markdown("## 🔬 Exploratory Data Analysis & Statistical Lab")
     st.markdown(
-        "Rigorous statistical evaluation covering univariate moments (skewness, kurtosis), inter-pollutant correlation matrices, "
-        "seasonal cycle decomposition, and sensor saturation audits."
+        "Quantitative atmospheric inspection covering distribution moments (skewness, kurtosis), "
+        "inter-pollutant Pearson correlation matrices, and extreme value sensor saturation audits."
     )
 
     eda_tabs = st.tabs([
         "📊 Univariate Moments & Skewness",
         "🔥 Correlation Heatmap Matrix",
-        "📈 Temporal & Seasonal Cycles",
-        "⚠️ Outlier & Sensor Saturation (>500)"
+        "📈 Seasonal Cycle Decompositions",
+        "⚠️ Sensor Saturation Audit (>500 AQI)"
     ])
     
     with eda_tabs[0]:
-        st.markdown("### National AQI Distribution & Statistical Moments")
-        fig1 = ROOT / "reports/figures/fig01_national_aqi_distribution.png"
-        if fig1.exists():
-            st.image(str(fig1), use_container_width=True)
+        st.markdown("### National AQI Statistical Distribution & Asymmetry")
+        valid_aqi_df = df_main.dropna(subset=["AQI"]).copy()
+        
+        fig_hist = px.histogram(
+            valid_aqi_df,
+            x="AQI",
+            nbins=60,
+            marginal="box",
+            color_discrete_sequence=["#163447"],
+            opacity=0.75
+        )
+        fig_hist.add_vline(x=float(valid_aqi_df["AQI"].mean()), line_dash="dash", line_color="#EF4444", annotation_text=f"Mean: {valid_aqi_df['AQI'].mean():.1f}")
+        fig_hist.add_vline(x=float(valid_aqi_df["AQI"].median()), line_dash="dot", line_color="#FBBF24", annotation_text=f"Median: {valid_aqi_df['AQI'].median():.1f}")
+        fig_hist.update_layout(
+            title="National AQI Histogram and Boxplot (N = 24,850)",
+            xaxis_title="Air Quality Index",
+            yaxis_title="Count of City-Days",
+            height=460,
+            margin=dict(t=40, b=20, l=20, r=20)
+        )
+        st.plotly_chart(fig_hist, use_container_width=True)
+        
         st.markdown("""
-        **Statistical Distribution Insights:**
-        - **Right-Skewed Tail (Skewness = 3.40):** Atmospheric AQI is heavily asymmetric; standard Gaussian assumptions fail, justifying robust non-parametric or tree-based learning models.
-        - **Extreme Kurtosis (Kurtosis = 21.42):** Severe leptokurtic behavior indicates heavy tails and acute episodic spikes far above baseline levels.
-        - **Mean vs. Median Divergence:** National mean (**166.5**) significantly exceeds median (**118.0**), demonstrating the dramatic upward pull of severe winter inversions across northern India.
+        **Statistical Distribution Moments Analysis:**
+        - **Right-Skewed Tail (Skewness = 3.40):** The distribution is heavily right-skewed; classical Gaussian assumptions fail, justifying robust non-parametric decision trees.
+        - **Extreme Leptokurtosis (Kurtosis = 21.42):** Demonstrates high probability of acute episodic pollution shocks far above the baseline.
+        - **Mean vs. Median Gap:** Mean (**166.5**) significantly exceeds Median (**118.0**), proving the dramatic upward pull of severe winter inversions.
         """)
 
     with eda_tabs[1]:
-        st.markdown("### Criteria Pollutant Pearson Correlation Heatmap")
-        fig2 = ROOT / "reports/figures/fig02_pollutant_correlation_matrix.png"
-        if fig2.exists():
-            st.image(str(fig2), use_container_width=True)
+        st.markdown("### Criteria Pollutant Pearson Correlation Matrix")
+        pollutants_corr = ["PM2.5", "PM10", "NO", "NO2", "NOx", "NH3", "CO", "SO2", "O3", "AQI"]
+        available_corr = [c for c in pollutants_corr if c in df_main.columns]
+        corr_matrix = df_main[available_corr].corr(method="pearson").round(2)
+        
+        fig_corr = px.imshow(
+            corr_matrix,
+            text_auto=True,
+            aspect="auto",
+            color_continuous_scale="RdBu_r",
+            zmin=-0.2,
+            zmax=1.0
+        )
+        fig_corr.update_layout(
+            title="Inter-Pollutant Pearson Correlation Heatmap",
+            height=500,
+            margin=dict(t=40, b=20, l=20, r=20)
+        )
+        st.plotly_chart(fig_corr, use_container_width=True)
+        
         st.markdown("""
-        **Inter-Pollutant Dynamics:**
-        - **PM2.5 vs Composite AQI ($r = 0.88$):** Fine particulate matter is the single most dominant determinant of the overall index in Indian urban air.
-        - **PM2.5 vs PM10 Collinearity ($r = 0.85$):** Severe multicollinearity between coarse and fine particles confirms common combustion and road dust sources, justifying $L_2$ regularized Ridge regression and ensemble tree methods.
-        - **NO2 vs NOx ($r = 0.79$):** Consistent vehicular exhaust combustion signature along metropolitan transit corridors.
+        **Empirical Atmospheric Relationships:**
+        - **PM2.5 vs AQI ($r = 0.88$):** Fine particulates represent the dominant mathematical sub-index driving Indian urban air quality.
+        - **PM2.5 vs PM10 ($r = 0.85$):** Severe collinearity confirms shared vehicular combustion and road dust sources.
+        - **NO2 vs NOx ($r = 0.79$):** Consistent vehicular fossil fuel exhaust signature along transit corridors.
         """)
 
     with eda_tabs[2]:
-        st.markdown("### Monthly Trajectories & Seasonal AQI Disparities")
+        st.markdown("### Seasonal Decompositions (Winter vs Monsoon)")
         fig3 = ROOT / "reports/figures/fig03_temporal_monthly_seasonal.png"
         if fig3.exists():
             st.image(str(fig3), use_container_width=True)
-        st.markdown("""
-        **Atmospheric Thermodynamics & Seasonality:**
-        - **Winter Inversions (Mean AQI = 209.9):** Low boundary layer height, stagnant winds, low ambient temperatures, and post-harvest biomass burning trap pollutants near ground level.
-        - **Monsoon Wet Deposition (Mean AQI = 118.1):** Precipitation wash-out and rapid atmospheric dispersion clean the air to annual lows (a 91.8 point drop compared to winter).
-        """)
 
     with eda_tabs[3]:
         st.markdown("### Outlier & Extreme Value Investigation (AQI > 500)")
-        st.markdown("""
-        **Audit of Scale Exceedances:**
-        - The official Indian CPCB AQI framework specifies a standardized bounded range between **0 and 500**.
-        - In the raw monitoring records, **543 observations** exhibit values exceeding 500 (with historical peaks up to 2,049 in Ahmedabad and Delhi).
-        - **Methodological Handling:** Rather than silently discarding or artificially capping these extreme events, the pipeline flags them as `Out of range` in data quality audits. This preserves authentic extreme episodes for disaster alerting while notifying analysts of sensor saturation.
-        """)
+        extreme_df = df_main[df_main["AQI"] > 500].copy()
+        st.metric("Total Recorded Scale Exceedances (>500)", f"{len(extreme_df):,} Records")
+        st.dataframe(
+            extreme_df[["City", "Date", "AQI", "PM2.5", "PM10", "NO2"]].sort_values("AQI", ascending=False).head(20),
+            use_container_width=True
+        )
+        st.info("💡 **Methodology:** The CPCB index scale is formally defined from 0 to 500. Extreme values are flagged as `Out of range` for sensor saturation audits while preserving authentic disaster records.")
 
 
 # ==============================================================================
-# PAGE 4: MATHEMATICAL & ML FOUNDATIONS LAB
+# PAGE 4: MATHEMATICAL FOUNDATIONS LAB
 # ==============================================================================
-elif page == "4. Mathematical & ML Foundations Lab":
+elif page == "4. Mathematical Foundations Lab":
     st.markdown("## 🧮 Mathematical & Machine Learning Foundations Lab")
     st.markdown(
-        "Demonstrating core syllabus mathematics directly applied to atmospheric data: "
-        "Covariance matrices, Eigenvalues, Principal Component Analysis (PCA), Statistical Hypothesis Testing, "
-        "and Gradient Descent Optimization Dynamics."
+        "Direct implementation of core syllabus mathematics applied to atmospheric criteria pollutants: "
+        "Covariance matrix eigenvalue decomposition (PCA), Welch's two-sample $t$-test, and Gradient Descent loss dynamics."
     )
 
     math_tabs = st.tabs([
@@ -418,58 +611,68 @@ elif page == "4. Mathematical & ML Foundations Lab":
     ])
 
     with math_tabs[0]:
-        st.markdown("### Principal Component Analysis (PCA) via Eigenvalue Decomposition")
-        st.markdown(
-            "Computing the covariance matrix $\\Sigma = \\frac{1}{N-1} X_{std}^T X_{std}$ on 6 criteria pollutants "
-            "(PM2.5, PM10, NO2, SO2, CO, O3) and solving for eigenvalues $\\lambda_i$ and orthogonal eigenvectors $v_i$."
-        )
+        st.markdown("### Principal Component Analysis (PCA) via Covariance Eigenvalue Decomposition")
+        pca_out = compute_air_quality_pca(df_main)
         
-        fig9 = ROOT / "reports/figures/fig09_pca_scree_and_biplot.png"
-        if fig9.exists():
-            st.image(str(fig9), use_container_width=True)
-        
-        if not df_main.empty:
-            pca_res = compute_air_quality_pca(df_main)
-            if "error" not in pca_res:
-                c_eig1, c_eig2, c_eig3 = st.columns(3)
-                with c_eig1:
-                    st.metric("PC1 Variance Explained", f"{pca_res['var_explained'][0]*100:.1f}%", help="Dominant combustion / particulate axis")
-                with c_eig2:
-                    st.metric("PC2 Variance Explained", f"{pca_res['var_explained'][1]*100:.1f}%", help="Secondary photochemical / gaseous axis")
-                with c_eig3:
-                    st.metric("Cumulative 2-PC Variance", f"{pca_res['cum_var_explained'][1]*100:.1f}%", help="Variance retained in 2D projection")
-                
-                st.markdown("#### Eigenvector Factor Loadings Table:")
-                st.dataframe(pd.DataFrame(pca_res["loadings"]), use_container_width=True)
+        if "error" in pca_out:
+            st.error(pca_out["error"])
+        else:
+            pc1_v = pca_out["var_explained"][0] * 100
+            pc2_v = pca_out["var_explained"][1] * 100
+            
+            c_pc1, c_pc2, c_pc3 = st.columns(3)
+            with c_pc1:
+                st.metric("PC1 Variance Explained", f"{pc1_v:.1f}%", help="Dominant combustion / particulate axis")
+            with c_pc2:
+                st.metric("PC2 Variance Explained", f"{pc2_v:.1f}%", help="Secondary photochemical / gaseous axis")
+            with c_pc3:
+                st.metric("Cumulative 2-PC Variance", f"{pc1_v + pc2_v:.1f}%", help="Variance preserved in 2D projection")
+
+            # Plotly Scree Plot
+            pcs = [f"PC{i+1}" for i in range(len(pca_out["eigenvalues"]))]
+            var_pcts = [v * 100 for v in pca_out["var_explained"]]
+            cum_pcts = [v * 100 for v in pca_out["cum_var_explained"]]
+            
+            fig_scree = go.Figure()
+            fig_scree.add_trace(go.Bar(x=pcs, y=var_pcts, name="Individual % Variance", marker_color="#167E78"))
+            fig_scree.add_trace(go.Scatter(x=pcs, y=cum_pcts, name="Cumulative % Variance", marker_color="#EF4444", mode="lines+markers"))
+            fig_scree.update_layout(
+                title="PCA Scree Plot: Atmospheric Criteria Pollutant Variance Decomposition",
+                xaxis_title="Principal Components",
+                yaxis_title="Variance Explained (%)",
+                height=380,
+                margin=dict(t=40, b=20, l=20, r=20)
+            )
+            st.plotly_chart(fig_scree, use_container_width=True)
+            
+            st.markdown("#### Factor Loadings Matrix on Top Components:")
+            st.dataframe(pd.DataFrame(pca_out["loadings"]), use_container_width=True)
 
     with math_tabs[1]:
         st.markdown("### Statistical Hypothesis Testing: Seasonal Pollution Disparities")
-        st.markdown(
-            "Formally testing whether atmospheric pollution during Winter months (Dec–Feb) is statistically significantly "
-            "higher than during Monsoon months (Jun–Sep) using Welch's two-sample $t$-test (unequal variances assumed) "
-            "and non-parametric Mann-Whitney $U$ test."
-        )
-
-        hypo_res = perform_seasonal_hypothesis_test(df_main) if not df_main.empty else {}
-        if "error" not in hypo_res and hypo_res:
-            h_col1, h_col2, h_col3 = st.columns(3)
-            with h_col1:
-                st.metric("Winter Mean AQI (95% CI)", f"{hypo_res['winter_mean']:.1f}", help=f"95% CI: [{hypo_res['winter_ci_95'][0]} – {hypo_res['winter_ci_95'][1]}]")
-            with h_col2:
-                st.metric("Monsoon Mean AQI (95% CI)", f"{hypo_res['monsoon_mean']:.1f}", help=f"95% CI: [{hypo_res['monsoon_ci_95'][0]} – {hypo_res['monsoon_ci_95'][1]}]")
-            with h_col3:
-                st.metric("Seasonal Mean Delta", f"+{hypo_res['mean_difference']:.1f} AQI", help="Absolute difference between seasonal means")
+        hypo = perform_seasonal_hypothesis_test(df_main)
+        
+        if "error" in hypo:
+            st.error(hypo["error"])
+        else:
+            h1, h2, h3 = st.columns(3)
+            with h1:
+                st.metric("Winter Mean AQI (95% CI)", f"{hypo['winter_mean']:.1f}", help=f"95% CI: [{hypo['winter_ci_95'][0]} – {hypo['winter_ci_95'][1]}]")
+            with h2:
+                st.metric("Monsoon Mean AQI (95% CI)", f"{hypo['monsoon_mean']:.1f}", help=f"95% CI: [{hypo['monsoon_ci_95'][0]} – {hypo['monsoon_ci_95'][1]}]")
+            with h3:
+                st.metric("Seasonal Mean Delta", f"+{hypo['mean_difference']:.1f} AQI", help="Difference between seasonal means")
 
             st.markdown(f"""
-            <div class="callout-card">
-                <h4>Empirical Hypothesis Test Outcomes:</h4>
+            <div class="info-card">
+                <h4>Formal Statistical Test Results:</h4>
                 <ul>
-                    <li><strong>Null Hypothesis ($H_0$):</strong> $\\mu_{winter} = \\mu_{monsoon}$ (No seasonal difference in mean AQI).</li>
+                    <li><strong>Null Hypothesis ($H_0$):</strong> $\\mu_{winter} = \\mu_{monsoon}$ (No difference between winter and monsoon means).</li>
                     <li><strong>Alternative Hypothesis ($H_1$):</strong> $\\mu_{winter} > \\mu_{monsoon}$ (Winter pollution is strictly higher).</li>
-                    <li><strong>Welch's $t$-statistic:</strong> <code>t = {hypo_res['t_statistic']}</code></li>
-                    <li><strong>$p$-value:</strong> <code>p < 1e-15</code> (Statistically Significant at $\\alpha = 0.001$)</li>
-                    <li><strong>Mann-Whitney $U$ Test:</strong> <code>U = {hypo_res['mann_whitney_u']:.0f}</code> ($p < 1e-15$)</li>
-                    <li><strong>Scientific Conclusion:</strong> The null hypothesis is overwhelmingly rejected. Winter inversions and biomass burning produce a massive, statistically validated elevation in ambient pollution.</li>
+                    <li><strong>Welch's $t$-statistic:</strong> <code>t = {hypo['t_statistic']}</code></li>
+                    <li><strong>Calculated $p$-value:</strong> <code>p < 1e-15</code> (Statistically Significant at $\\alpha = 0.001$)</li>
+                    <li><strong>Mann-Whitney $U$ Test:</strong> <code>U = {hypo['mann_whitney_u']:.0f}</code> ($p < 1e-15$)</li>
+                    <li><strong>Scientific Conclusion:</strong> The null hypothesis is decisively rejected. Thermal inversions and biomass combustion produce a massive, statistically validated elevation in winter ambient air pollution.</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
@@ -477,30 +680,36 @@ elif page == "4. Mathematical & ML Foundations Lab":
     with math_tabs[2]:
         st.markdown("### Gradient Descent Optimization Dynamics Simulator")
         st.markdown(
-            "Compare the loss convergence trajectories of 5 optimization algorithms (Batch GD, Mini-batch SGD, Polyak Momentum, "
-            "RMSprop, and Adam) trained to minimize Mean Squared Error on the multi-pollutant atmospheric regression loss surface."
+            "Interactive loss convergence analysis comparing Batch GD, Mini-batch SGD, Polyak Momentum, "
+            "RMSprop, and Adam on the multi-pollutant AQI regression loss surface."
         )
 
         sim_c1, sim_c2 = st.columns(2)
         with sim_c1:
-            lr_val = st.slider("Learning Rate (α):", min_value=0.001, max_value=0.15, value=0.03, step=0.005)
+            lr_val = st.slider("Learning Rate (α):", min_value=0.005, max_value=0.15, value=0.03, step=0.005)
         with sim_c2:
-            epochs_val = st.slider("Optimization Epochs:", min_value=20, max_value=100, value=50, step=10)
+            epochs_val = st.slider("Optimization Epochs:", min_value=20, max_value=80, value=50, step=10)
 
         opt_sim = simulate_optimizers_on_aqi_regression(df_main, epochs=epochs_val, learning_rate=lr_val)
         
-        fig, ax_opt = plt.subplots(figsize=(10, 4.5))
-        pal = {"BGD": "#163447", "SGD": "#5E7480", "Momentum": "#F4C66A", "RMSprop": "#8B5CF6", "Adam": "#167E78"}
-        for k, col in pal.items():
-            lw = 2.2 if k in ["Adam", "Momentum"] else 1.4
-            ax_opt.plot(opt_sim["epochs"], opt_sim[k], label=f"{k} (Loss: {opt_sim['final_loss'][k]:.4f})", color=col, linewidth=lw)
-        ax_opt.set_title(f"Optimizer Convergence on Atmospheric Loss Surface (α = {lr_val})", fontsize=11, fontweight="bold", color="#163447")
-        ax_opt.set_xlabel("Epochs", fontsize=10, fontweight="bold")
-        ax_opt.set_ylabel("Loss (MSE, log scale)", fontsize=10, fontweight="bold")
-        ax_opt.set_yscale("log")
-        ax_opt.grid(True, linestyle="--", alpha=0.5)
-        ax_opt.legend(frameon=True, facecolor="white")
-        st.pyplot(fig)
+        fig_opt = go.Figure()
+        opt_colors = {"BGD": "#0F172A", "SGD": "#64748B", "Momentum": "#F59E0B", "RMSprop": "#8B5CF6", "Adam": "#10B981"}
+        for name, col in opt_colors.items():
+            fig_opt.add_trace(go.Scatter(
+                x=opt_sim["epochs"],
+                y=opt_sim[name],
+                name=f"{name} (Final: {opt_sim['final_loss'][name]:.5f})",
+                line=dict(color=col, width=2.5 if name in ["Adam", "Momentum"] else 1.5)
+            ))
+        fig_opt.update_layout(
+            title=f"Optimizer Loss Trajectories (Learning Rate α = {lr_val})",
+            xaxis_title="Epochs",
+            yaxis_title="Mean Squared Error Loss (Log Scale)",
+            yaxis_type="log",
+            height=420,
+            margin=dict(t=40, b=20, l=20, r=20)
+        )
+        st.plotly_chart(fig_opt, use_container_width=True)
 
 
 # ==============================================================================
@@ -509,21 +718,22 @@ elif page == "4. Mathematical & ML Foundations Lab":
 elif page == "5. 24-Hour Predictive Early Warning Center":
     st.markdown("## 🔮 Intelligent 24-Hour Predictive Early Warning Center")
     st.markdown(
-        "A one-calendar-day-ahead machine learning inference engine. Enter current atmospheric observations (Day $t$) "
+        "One-calendar-day-ahead machine learning inference engine. Enter current atmospheric observations (Day $t$) "
         "to forecast tomorrow's composite AQI ($t+1$), CPCB category classification, and a 95% forecast uncertainty interval."
     )
 
     if ml_model is None:
-        st.error("Machine learning model artifact not found. Run `python train_model.py` first.")
+        st.error("Model artifact not found. Please run `python train_model.py` first.")
     else:
         cities = sorted(df_main["City"].unique()) if not df_main.empty else ["Delhi", "Ahmedabad", "Bengaluru"]
         
-        st.markdown("### 🎛️ Input Atmospheric Observations (Day $t$)")
+        st.markdown("### 🎛️ Observation Inputs (Day $t$)")
         
-        preset_col1, preset_col2, preset_col3, preset_col4 = st.columns(4)
-        with preset_col1:
+        # Scenarios
+        p1, p2, p3, p4 = st.columns(4)
+        with p1:
             st.markdown("**Quick Scenarios:**")
-        with preset_col2:
+        with p2:
             if st.button("🚨 Severe Winter Delhi"):
                 st.session_state["p_city"] = "Delhi"
                 st.session_state["p_aqi"] = 385.0
@@ -531,7 +741,7 @@ elif page == "5. 24-Hour Predictive Early Warning Center":
                 st.session_state["p_pm10"] = 320.0
                 st.session_state["p_no2"] = 75.0
                 st.session_state["p_co"] = 3.2
-        with preset_col3:
+        with p3:
             if st.button("🌱 Clean Monsoon Bengaluru"):
                 st.session_state["p_city"] = "Bengaluru"
                 st.session_state["p_aqi"] = 45.0
@@ -539,7 +749,7 @@ elif page == "5. 24-Hour Predictive Early Warning Center":
                 st.session_state["p_pm10"] = 35.0
                 st.session_state["p_no2"] = 14.0
                 st.session_state["p_co"] = 0.6
-        with preset_col4:
+        with p4:
             if st.button("⚖️ Moderate Spring Amaravati"):
                 st.session_state["p_city"] = "Amaravati"
                 st.session_state["p_aqi"] = 140.0
@@ -552,7 +762,7 @@ elif page == "5. 24-Hour Predictive Early Warning Center":
         with col_in1:
             pred_city = st.selectbox("Location (City):", cities, index=cities.index(st.session_state.get("p_city", "Delhi")) if st.session_state.get("p_city", "Delhi") in cities else 0)
             obs_date = st.date_input("Observation Date (Day t):", value=pd.to_datetime("2026-10-25"))
-            curr_aqi = st.number_input("Current Composite AQI (Day t):", min_value=0.0, max_value=1500.0, value=float(st.session_state.get("p_aqi", 175.0)), step=5.0)
+            curr_aqi = st.number_input("Current AQI (Day t):", min_value=0.0, max_value=1500.0, value=float(st.session_state.get("p_aqi", 175.0)), step=5.0)
             curr_pm25 = st.number_input("PM2.5 (µg/m³):", min_value=0.0, max_value=800.0, value=float(st.session_state.get("p_pm25", 85.0)), step=2.0)
         with col_in2:
             curr_pm10 = st.number_input("PM10 (µg/m³):", min_value=0.0, max_value=1200.0, value=float(st.session_state.get("p_pm10", 145.0)), step=5.0)
@@ -563,9 +773,9 @@ elif page == "5. 24-Hour Predictive Early Warning Center":
             curr_o3 = st.number_input("O3 (µg/m³):", min_value=0.0, max_value=300.0, value=38.0, step=1.0)
             curr_nh3 = st.number_input("NH3 (µg/m³):", min_value=0.0, max_value=300.0, value=25.0, step=1.0)
             curr_nox = st.number_input("NOx (ppb):", min_value=0.0, max_value=400.0, value=30.0, step=1.0)
-            threshold = st.slider("Configured Alert Trigger Threshold (AQI):", min_value=100.0, max_value=400.0, value=200.0, step=25.0)
+            threshold = st.slider("Alert Trigger Threshold (AQI):", min_value=100.0, max_value=400.0, value=200.0, step=25.0)
 
-        if st.button("🚀 Generate Next-Day Forecast & Alert Evaluation", type="primary", use_container_width=True):
+        if st.button("🚀 Generate Next-Day AQI Forecast", type="primary", use_container_width=True):
             current_vals = {
                 "AQI": curr_aqi, "PM2.5": curr_pm25, "PM10": curr_pm10,
                 "NO2": curr_no2, "SO2": curr_so2, "CO": curr_co,
@@ -574,77 +784,103 @@ elif page == "5. 24-Hour Predictive Early Warning Center":
             pred_res = make_single_prediction(ml_model, pred_city, obs_date, current_vals, ml_metadata)
             
             st.markdown("---")
-            st.markdown("### 🎯 Machine Learning Prediction Outcomes")
+            st.markdown("### 🎯 Model Prediction & Health Advisory")
             
-            pcol1, pcol2, pcol3, pcol4 = st.columns(4)
+            pcol1, pcol2 = st.columns([1, 1.2])
+            
             with pcol1:
-                st.metric("Predicted Next-Day AQI", f"{pred_res['predicted_aqi']:.1f}", delta=f"{pred_res['predicted_aqi'] - curr_aqi:+.1f} vs Today")
-            with pcol2:
+                # Plotly Gauge Chart for Predicted AQI
                 cat = pred_res['category']
-                cat_color = "#10B981" if cat == "Good" else "#84CC16" if cat == "Satisfactory" else "#FBBF24" if cat == "Moderate" else "#F97316" if cat == "Poor" else "#EF4444" if cat == "Very Poor" else "#7F1D1D"
-                st.markdown(f"**Predicted Category:**")
-                st.markdown(f"<div style='background:{cat_color};color:white;padding:8px 14px;border-radius:10px;text-align:center;font-weight:bold;font-size:1.1rem;'>{cat}</div>", unsafe_allow_html=True)
-            with pcol3:
-                st.metric("95% Forecast Interval", f"[{pred_res['lower_bound_95']:.1f} – {pred_res['upper_bound_95']:.1f}]", help="Empirical 95% confidence bounds (±1.96 * residual std)")
-            with pcol4:
+                cat_colors = {
+                    "Good": "#10B981", "Satisfactory": "#84CC16", "Moderate": "#FBBF24",
+                    "Poor": "#F97316", "Very Poor": "#EF4444", "Severe": "#7F1D1D"
+                }
+                needle_color = cat_colors.get(cat, "#163447")
+                
+                fig_gauge = go.Figure(go.Indicator(
+                    mode="gauge+number+delta",
+                    value=pred_res["predicted_aqi"],
+                    delta={'reference': curr_aqi, 'increasing': {'color': "#EF4444"}, 'decreasing': {'color': "#10B981"}},
+                    title={'text': f"Predicted Next-Day AQI ({pred_res['prediction_date']})"},
+                    gauge={
+                        'axis': {'range': [0, 500]},
+                        'bar': {'color': needle_color},
+                        'steps': [
+                            {'range': [0, 50], 'color': "rgba(16, 185, 129, 0.2)"},
+                            {'range': [51, 100], 'color': "rgba(132, 204, 22, 0.2)"},
+                            {'range': [101, 200], 'color': "rgba(251, 191, 36, 0.2)"},
+                            {'range': [201, 300], 'color': "rgba(249, 115, 22, 0.2)"},
+                            {'range': [301, 400], 'color': "rgba(239, 68, 68, 0.2)"},
+                            {'range': [401, 500], 'color': "rgba(127, 29, 29, 0.2)"}
+                        ]
+                    }
+                ))
+                fig_gauge.update_layout(height=340, margin=dict(t=30, b=20, l=30, r=30))
+                st.plotly_chart(fig_gauge, use_container_width=True)
+
+            with pcol2:
                 alert_eval = evaluate_prediction(pred_city, pred_res['prediction_date'], pred_res['predicted_aqi'], threshold=threshold)
-                alert_sev = alert_eval["Severity"]
-                st.metric("Alert Status", f"{alert_sev}", help="Triggered when forecast AQI >= threshold")
-
-            # Health Advisory Card
-            advisory = ""
-            if cat in ["Good", "Satisfactory"]:
-                advisory = "✅ **Air quality is acceptable.** Outdoor physical activities are safe for all population groups."
-            elif cat == "Moderate":
-                advisory = "⚠️ **Moderate air quality.** People with existing respiratory illnesses (asthma, COPD) or cardiovascular disorders should limit prolonged outdoor exertion."
-            elif cat == "Poor":
-                advisory = "⛔ **Poor air quality.** Breathing discomfort likely for most people upon prolonged exposure. Sensitive groups should wear certified N95 masks."
-            elif cat in ["Very Poor", "Severe"]:
-                advisory = "🚨 **HAZARDOUS POLLUTION ALERT!** High risk of acute respiratory illness on prolonged exposure. Avoid strenuous outdoor activity. Operate indoor HEPA air purifiers."
-            
-            st.warning(advisory)
-            st.caption(f"ℹ️ Model: {ml_metadata.get('model_name', 'Random Forest')} | Target Date: {pred_res['prediction_date']} | Disclaimer: {pred_res['warning']}")
+                
+                st.markdown(f"""
+                <div class="kpi-card" style="margin-top: 15px;">
+                    <div class="kpi-label">Predicted CPCB Tier</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: {needle_color};">{cat}</div>
+                    <div class="kpi-sub">95% Confidence Interval: [{pred_res['lower_bound_95']:.1f} – {pred_res['upper_bound_95']:.1f}] AQI</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Health Advisory
+                advisories = {
+                    "Good": "✅ **Clean Atmospheric State:** Air quality is satisfactory. Outdoor physical exercise is safe for all groups.",
+                    "Satisfactory": "🌱 **Acceptable Air Quality:** Minor breathing discomfort possible only for exceptionally sensitive individuals.",
+                    "Moderate": "⚠️ **Moderate Pollution:** Individuals with pre-existing pulmonary disease (asthma, COPD) or heart conditions should limit prolonged outdoor exertion.",
+                    "Poor": "⛔ **Poor Air Quality:** Breathing discomfort likely for most individuals upon prolonged exertion. Vulnerable groups should wear certified N95 masks.",
+                    "Very Poor": "🚨 **Very Poor Air Quality:** High risk of acute respiratory illness on prolonged exposure. Avoid outdoor activities. Operate indoor HEPA purifiers.",
+                    "Severe": "🔴 **HAZARDOUS ATMOSPHERIC EMERGENCY:** Serious respiratory and cardiovascular distress across healthy population. Keep windows closed and avoid all outdoor physical activity."
+                }
+                st.warning(advisories.get(cat, "Advisory unavailable for out-of-scale reading."))
+                st.caption(f"Alert Status: `{alert_eval['Severity']}` | Model: `{ml_metadata.get('model_name', 'Random Forest')}`")
 
 
 # ==============================================================================
-# PAGE 6: POLLUTION ALERT ENGINE & DISPATCHER
+# PAGE 6: AUTOMATED POLLUTION ALERT ENGINE
 # ==============================================================================
-elif page == "6. Pollution Alert Engine & Dispatcher":
+elif page == "6. Automated Pollution Alert Engine":
     st.markdown("## 🚨 Automated Pollution Alert Engine & Dispatch Simulator")
     st.markdown(
-        "Automated multi-tier alert evaluation engine classifying atmospheric measurements into **Data Quality Flags**, "
-        "**Predicted Early Warnings**, and **Public Health Advisories** based on CPCB threshold standards."
+        "Automated rule-governed alert evaluation classifying continuous observations into **Data Quality Flags**, "
+        "**Threshold Warnings**, and **Public Health Advisories** based on CPCB standard tiers."
     )
 
-    t_col1, t_col2 = st.columns([1, 2])
+    t_col1, t_col2 = st.columns([1, 1.4])
     with t_col1:
-        alert_thresh = st.slider("Alert Trigger Threshold (AQI):", min_value=100, max_value=400, value=250, step=25)
+        alert_thresh = st.slider("Configure Alert Threshold (AQI):", min_value=100, max_value=400, value=250, step=25)
         st.markdown("""
-        **Alert Severity Tiering:**
-        - 🟡 **Moderate Risk:** AQI 101 – 200
-        - 🟠 **High Risk (Poor):** AQI 201 – 300
-        - 🔴 **Severe Risk (Very Poor / Severe):** AQI 301 – 500+
-        - 🟣 **Data Quality Flag:** AQI > 500 (Sensor saturation / calibration alert)
+        **Alert Trigger Categories:**
+        - 🟡 **Moderate Alert:** AQI 101 – 200
+        - 🟠 **High Risk Alert (Poor):** AQI 201 – 300
+        - 🔴 **Emergency Alert (Very Poor / Severe):** AQI 301 – 500+
+        - 🟣 **Data Quality Flag:** AQI > 500 (Sensor saturation check)
         """)
         
         st.markdown("---")
-        st.markdown("### 📡 Simulated Alert Payload Generator")
-        sim_city = st.selectbox("Simulate Dispatch for City:", sorted(df_main["City"].unique()) if not df_main.empty else ["Delhi"])
-        sim_val = st.number_input("Simulated AQI Level:", min_value=50.0, max_value=600.0, value=340.0, step=10.0)
+        st.markdown("### 📡 Live Dispatch Payload Simulator")
+        sim_city = st.selectbox("Dispatch Target City:", sorted(df_main["City"].unique()) if not df_main.empty else ["Delhi"])
+        sim_val = st.number_input("Simulated AQI Level:", min_value=50.0, max_value=600.0, value=325.0, step=10.0)
         
-        if st.button("📤 Generate & Preview Alert Payload"):
+        if st.button("📤 Generate Public Dispatch Notice"):
             sim_alert = evaluate_observation(sim_city, "2026-10-26", sim_val, threshold=alert_thresh)
             payload = {
-                "eventId": f"ALERT-{hash(sim_city + str(sim_val)) % 1000000:06d}",
-                "timestamp": "2026-10-26T08:00:00+05:30",
-                "city": sim_city,
+                "dispatchId": f"DISPATCH-{abs(hash(sim_city + str(sim_val))) % 1000000:06d}",
+                "timestamp": "2026-10-26T08:30:00+05:30",
+                "targetCity": sim_city,
                 "recordedAQI": sim_val,
-                "cpcbCategory": sim_alert["Category"],
+                "cpcbTier": sim_alert["Category"],
                 "alertSeverity": sim_alert["Severity"],
                 "alertType": sim_alert["AlertType"],
-                "channelDispatches": {
-                    "smsBroadcast": f"URGENT: Air quality in {sim_city} reached {sim_alert['Category']} (AQI {sim_val:.0f}). Vulnerable groups stay indoors.",
-                    "municipalNotice": f"Notice to Department of Environment: Episodic threshold exceeded in {sim_city}. Enforce construction and dust suppression protocols."
+                "channels": {
+                    "smsEmergencyBroadcast": f"PUBLIC ALERT: Air quality in {sim_city} reached {sim_alert['Category']} (AQI {sim_val:.0f}). Vulnerable groups should remain indoors.",
+                    "municipalNotice": f"Statutory Notice to Pollution Control Board: Exceedance triggered in {sim_city}. Mobilize dust suppression misting."
                 }
             }
             st.json(payload)
@@ -675,7 +911,7 @@ elif page == "6. Pollution Alert Engine & Dispatcher":
 elif page == "7. Model Performance & Error Analysis":
     st.markdown("## 📈 Machine Learning Model Performance & Error Diagnostics")
     st.markdown(
-        "Empirical out-of-sample comparison across candidate algorithms evaluated on held-out "
+        "Empirical out-of-sample benchmark across candidate algorithms evaluated on held-out "
         "chronological test records (8,688 records from May 2019 to July 2020)."
     )
 
@@ -690,28 +926,34 @@ elif page == "7. Model Performance & Error Analysis":
 
         col_m1, col_m2 = st.columns(2)
         with col_m1:
-            st.markdown("### 📊 Error Metrics & Variance Explained")
-            fig5 = ROOT / "reports/figures/fig05_model_performance_comparison.png"
-            if fig5.exists():
-                st.image(str(fig5), use_container_width=True)
+            fig_mae = px.bar(
+                comp_df,
+                x="Model",
+                y="MAE",
+                color="SelectedByValidation",
+                color_discrete_map={True: "#167E78", False: "#94A3B8"},
+                text="MAE"
+            )
+            fig_mae.update_layout(title="Mean Absolute Error (MAE, lower is better)", height=380)
+            st.plotly_chart(fig_mae, use_container_width=True)
 
         with col_m2:
-            st.markdown("### 🎯 Actual vs Predicted Parity & Residuals")
-            fig6 = ROOT / "reports/figures/fig06_predicted_vs_actual_residuals.png"
-            if fig6.exists():
-                st.image(str(fig6), use_container_width=True)
+            fig_r2 = px.bar(
+                comp_df,
+                x="Model",
+                y="R2",
+                color="SelectedByValidation",
+                color_discrete_map={True: "#167E78", False: "#94A3B8"},
+                text="R2"
+            )
+            fig_r2.update_layout(title="Explained Variance (R² Score, higher is better)", yaxis_range=[0.7, 0.9], height=380)
+            st.plotly_chart(fig_r2, use_container_width=True)
 
+        st.markdown("---")
         st.markdown("### 🌲 Top Feature Importances (Gini Impurity Reduction)")
         fig7 = ROOT / "reports/figures/fig07_feature_importance.png"
         if fig7.exists():
             st.image(str(fig7), use_container_width=True)
-            
-        st.markdown("""
-        **Validation Summary:**
-        1. **Random Forest Selected:** Lowest validation MAE (19.66) and highest test $R^2$ (0.8508), outperforming the Persistence Baseline ($R^2 = 0.7920$) and Linear Regression ($R^2 = 0.8397$).
-        2. **Chronological Splitting:** Training data ends at 2019-05-27; all testing data occurs strictly in the future, eliminating temporal data leakage.
-        3. **Category Accuracy:** Random Forest achieves 75.8% exact category accuracy across the 6 CPCB bands.
-        """)
 
 
 # ==============================================================================
@@ -723,33 +965,32 @@ elif page == "8. Architecture & Societal Impact":
     st.markdown("""
     ### 🎓 Academic & Engineering Profile
     - **Course:** CSE273: Foundations of Machine Learning (L:2, T:0, P:2, Credits:3)
-    - **Student:** Subrat Panigrahi | Registration Number: 26143073 | Section: N1
+    - **Student Author:** Subrat Panigrahi | Registration Number: 26143073 | Section: N1
     - **Institution:** Lovely School of Computer Science & Engineering, Lovely Professional University
-    - **Project Title:** Smart Air Quality Prediction and Pollution Alert System
     - **Official GitHub Link:** [https://github.com/Subu2006/Smart-Air-Quality-Prediction-and-Pollution-Alert-System](https://github.com/Subu2006/Smart-Air-Quality-Prediction-and-Pollution-Alert-System)
     """)
 
     st.markdown("---")
-    st.markdown("### 🏗️ End-to-End Enterprise Architecture")
+    st.markdown("### 🏗️ Enterprise Architecture Flowchart")
     st.markdown("""
     ```
     ┌────────────────────────────────────────────────────────────────────────┐
     │                      DATA INGESTION & AUDITING LAYER                   │
-    │  • CPCB Monitoring Data (29,531 records across 26 Indian Cities)       │
-    │  • Missingness Preserved (Non-zero imputation) | Sensor Saturation (>500)│
+    │  • CPCB Continuous Monitoring Data (29,531 records across 26 cities)   │
+    │  • Non-Zero Missingness Preservation | Sensor Saturation Audit (>500)  │
     └───────────────────────────────────┬────────────────────────────────────┘
                                         │
     ┌───────────────────────────────────▼────────────────────────────────────┐
     │                   FEATURE ENGINEERING & MATHEMATICAL LAB               │
     │  • Single-Day Lag Vectors: [AQI_t, PM2.5_t, PM10_t, NO2_t, SO2_t, CO_t] │
-    │  • Cyclical Harmonics: sin(2π d/365.25), cos(2π d/365.25), Weekdays   │
-    │  • Mathematical Core: PCA & Eigenvalues, Welch's t-test, Optimizers    │
+    │  • Cyclical Calendar Harmonics: sin(2π d/365.25), cos(2π d/365.25)     │
+    │  • Mathematical Core: PCA Eigenvalue Decomposition, Welch's t-test     │
     └───────────────────────────────────┬────────────────────────────────────┘
                                         │
     ┌───────────────────────────────────▼────────────────────────────────────┐
     │               MACHINE LEARNING & CHRONOLOGICAL VALIDATION              │
     │  • Split: Train (15,655 rows < May 2019) | Test (8,688 rows ≥ May 2019) │
-    │  • Algorithms: Persistence, OLS, Ridge, Decision Tree, RF, GradBoost   │
+    │  • Multi-Model Benchmark: Baseline, OLS, Ridge, Decision Tree, RF, GBDT │
     │  • Best Model: Random Forest (R² = 0.8508, MAE = 19.66, Cat Acc = 75.8%)│
     └───────────────────────────────────┬────────────────────────────────────┘
                                         │
@@ -757,7 +998,7 @@ elif page == "8. Architecture & Societal Impact":
     │             PREDICTIVE EARLY WARNING & AUTOMATED ALERT ENGINE          │
     │  • 1-Day Ahead Forecast (t+1) with 95% Confidence Bounds (±77.68 AQI)  │
     │  • Automated CPCB Tiered Classification (Good to Severe Alerts)        │
-    │  • Public Health Demographic Advisories & Webhook/SMS Dispatcher       │
+    │  • Multi-Channel Public Health Demographic Advisories & Dispatcher     │
     └────────────────────────────────────────────────────────────────────────┘
     ```
     """)
@@ -765,7 +1006,7 @@ elif page == "8. Architecture & Societal Impact":
     st.markdown("---")
     st.markdown("""
     ### 🛡️ Ethical Boundaries & Responsible Environmental AI
-    1. **Not a Statutory Forecast:** This system provides predictive decision support and does not replace official statutory forecasts issued by the Central Pollution Control Board (CPCB) or the Indian Meteorological Department (IMD).
-    2. **No Clinical Diagnosis:** Air quality risk categories indicate atmospheric concentration thresholds and are not clinical diagnoses.
-    3. **Transparency in Data Quality:** Extreme saturation values (>500 AQI) and missing observations are explicitly tracked and documented rather than silently smoothed.
+    1. **Non-Statutory Advisory:** Predictive model outputs and alert tags provide analytical decision support and do not substitute for official statutory advisories issued by CPCB or IMD.
+    2. **No Clinical Diagnostic Claims:** Air quality hazard categories reflect atmospheric pollutant concentrations and should not be used as clinical diagnostic criteria.
+    3. **Transparency in Data Quality:** Extreme values (>500 AQI) and telemetry gaps are explicitly retained and audited rather than cosmetically smoothed.
     """)

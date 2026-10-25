@@ -15,23 +15,25 @@ def compute_air_quality_pca(df: pd.DataFrame, pollutant_cols: list[str] | None =
     if pollutant_cols is None:
         pollutant_cols = ["PM2.5", "PM10", "NO2", "SO2", "CO", "O3"]
     
-    # Filter available columns
-    available_cols = [c for c in pollutant_cols if c in df.columns]
+    # Filter available columns with valid observations
+    available_cols = [c for c in pollutant_cols if c in df.columns and df[c].dropna().nunique() > 1]
+    if len(available_cols) < 2:
+        return {"error": "Insufficient distinct pollutant columns available for PCA."}
+        
     valid_sub = df[available_cols].dropna().copy()
+    if len(valid_sub) < 30:
+        return {"error": "Insufficient valid observations for robust PCA calculation."}
     
-    if len(valid_sub) < 50:
-        return {"error": "Insufficient valid data for PCA"}
-    
-    X = valid_sub.to_numpy()
+    X = valid_sub.to_numpy(dtype=float)
     n_samples, n_features = X.shape
     
     # Standardize (zero mean, unit variance)
     mean_vec = np.mean(X, axis=0)
     std_vec = np.std(X, axis=0)
-    std_vec[std_vec == 0] = 1.0
+    std_vec = np.where(std_vec == 0, 1.0, std_vec)
     X_std = (X - mean_vec) / std_vec
     
-    # Covariance Matrix: Sigma = (1 / (N - 1)) * X^T * X
+    # Covariance Matrix: Sigma = (1 / (N - 1)) * X_std^T * X_std
     cov_matrix = np.cov(X_std, rowvar=False)
     
     # Eigenvalue & Eigenvector Decomposition
@@ -39,45 +41,51 @@ def compute_air_quality_pca(df: pd.DataFrame, pollutant_cols: list[str] | None =
     
     # Sort descending
     sort_idx = np.argsort(eigenvalues)[::-1]
-    eigenvalues = eigenvalues[sort_idx]
+    eigenvalues = np.maximum(eigenvalues[sort_idx], 0.0)
     eigenvectors = eigenvectors[:, sort_idx]
     
     # Explained variance ratios
     total_var = np.sum(eigenvalues)
-    var_explained = eigenvalues / total_var
+    var_explained = eigenvalues / total_var if total_var > 0 else np.zeros_like(eigenvalues)
     cum_var_explained = np.cumsum(var_explained)
     
     # Project data to top 2 PCs
     projected_2d = X_std @ eigenvectors[:, :2]
     
     loadings = pd.DataFrame(
-        eigenvectors[:, :3],
+        eigenvectors[:, :min(3, n_features)],
         index=available_cols,
-        columns=["PC1_Loading", "PC2_Loading", "PC3_Loading"]
+        columns=[f"PC{i+1}_Loading" for i in range(min(3, n_features))]
     ).reset_index().rename(columns={"index": "Pollutant"})
     
     return {
         "features": available_cols,
         "n_samples": n_samples,
         "cov_matrix": cov_matrix.tolist(),
-        "eigenvalues": eigenvalues.tolist(),
-        "var_explained": var_explained.tolist(),
-        "cum_var_explained": cum_var_explained.tolist(),
+        "eigenvalues": [round(float(v), 5) for v in eigenvalues],
+        "var_explained": [round(float(v), 5) for v in var_explained],
+        "cum_var_explained": [round(float(v), 5) for v in cum_var_explained],
         "loadings": loadings.to_dict(orient="records"),
-        "projected_sample": projected_2d[:500].tolist()
+        "projected_sample": [[round(float(v[0]), 3), round(float(v[1]), 3)] for v in projected_2d[:500]]
     }
 
 
 def perform_seasonal_hypothesis_test(df: pd.DataFrame) -> dict:
     """Perform Welch's two-sample t-test evaluating Winter vs Monsoon AQI disparities."""
+    if df.empty or "Date" not in df.columns or "AQI" not in df.columns:
+        return {"error": "Required Date and AQI columns missing from dataset."}
+        
     df_clean = df.dropna(subset=["Date", "AQI"]).copy()
-    df_clean["Month"] = pd.to_datetime(df_clean["Date"]).dt.month
+    if len(df_clean) < 50:
+        return {"error": "Insufficient records for hypothesis testing."}
+        
+    df_clean["Month"] = pd.to_datetime(df_clean["Date"], errors="coerce").dt.month
     
-    winter_aqi = df_clean.loc[df_clean["Month"].isin([12, 1, 2]), "AQI"].dropna()
-    monsoon_aqi = df_clean.loc[df_clean["Month"].isin([6, 7, 8, 9]), "AQI"].dropna()
+    winter_aqi = df_clean.loc[df_clean["Month"].isin([12, 1, 2]), "AQI"].dropna().to_numpy()
+    monsoon_aqi = df_clean.loc[df_clean["Month"].isin([6, 7, 8, 9]), "AQI"].dropna().to_numpy()
     
-    if len(winter_aqi) < 30 or len(monsoon_aqi) < 30:
-        return {"error": "Insufficient observations for hypothesis testing"}
+    if len(winter_aqi) < 20 or len(monsoon_aqi) < 20:
+        return {"error": "Insufficient observations in Winter or Monsoon subsets."}
     
     # Welch's t-test (unequal variances assumed)
     t_stat, p_val = stats.ttest_ind(winter_aqi, monsoon_aqi, equal_var=False)
@@ -87,10 +95,10 @@ def perform_seasonal_hypothesis_test(df: pd.DataFrame) -> dict:
     
     # 95% Confidence Intervals for means
     def get_ci(data):
-        mean = np.mean(data)
-        sem = stats.sem(data)
+        mean = float(np.mean(data))
+        sem = float(stats.sem(data))
         ci = stats.t.interval(0.95, len(data) - 1, loc=mean, scale=sem)
-        return float(mean), float(ci[0]), float(ci[1]), float(np.std(data))
+        return mean, float(ci[0]), float(ci[1]), float(np.std(data))
     
     w_mean, w_low, w_high, w_std = get_ci(winter_aqi)
     m_mean, m_low, m_high, m_std = get_ci(monsoon_aqi)
@@ -115,52 +123,58 @@ def perform_seasonal_hypothesis_test(df: pd.DataFrame) -> dict:
 
 def simulate_optimizers_on_aqi_regression(
     df: pd.DataFrame,
-    epochs: int = 60,
-    learning_rate: float = 0.05
+    epochs: int = 50,
+    learning_rate: float = 0.03
 ) -> dict:
     """Simulate and compare gradient descent optimization algorithms on the real atmospheric regression loss surface.
     
+    Guarantees numerical stability and prevents overflow using bounded learning steps and gradient clipping.
     Compares:
     1. Batch Gradient Descent (BGD)
-    2. Stochastic Gradient Descent (SGD)
-    3. Momentum Optimizer (Polyak momentum, beta=0.9)
+    2. Mini-batch Stochastic Gradient Descent (SGD)
+    3. Polyak Momentum Optimizer (beta=0.9)
     4. RMSprop Optimizer (beta=0.99)
     5. Adam Optimizer (beta1=0.9, beta2=0.999)
     """
     sub = df[["PM2.5", "PM10", "NO2", "CO", "AQI"]].dropna().copy()
-    if len(sub) < 200:
-        # Fallback dummy data if dataset is small
+    if len(sub) < 150:
         np.random.seed(42)
         X = np.random.randn(500, 3)
         y = 2.5 * X[:, 0] - 1.8 * X[:, 1] + 3.0 * X[:, 2] + np.random.randn(500) * 0.5
     else:
-        # Take a balanced slice for fast interactive optimization
-        X = sub[["PM2.5", "PM10", "NO2", "CO"]].to_numpy()[:1000]
-        y = sub["AQI"].to_numpy()[:1000]
-        # Standardize features
-        X = (X - np.mean(X, axis=0)) / (np.std(X, axis=0) + 1e-8)
+        sample_slice = sub.head(1000)
+        X = sample_slice[["PM2.5", "PM10", "NO2", "CO"]].to_numpy(dtype=float)
+        y = sample_slice["AQI"].to_numpy(dtype=float)
+        # Standardize features for well-conditioned loss curvature
+        mean_X = np.mean(X, axis=0)
+        std_X = np.std(X, axis=0)
+        std_X = np.where(std_X == 0, 1.0, std_X)
+        X = (X - mean_X) / std_X
         # Add intercept column
         X = np.hstack([np.ones((len(X), 1)), X])
         y = (y - np.mean(y)) / (np.std(y) + 1e-8)
 
     n_samples, n_features = X.shape
-    
+    lr = float(np.clip(learning_rate, 0.001, 0.2))
+
     def compute_loss(w):
         res = X @ w - y
-        return 0.5 * np.mean(res ** 2)
+        loss = 0.5 * np.mean(res ** 2)
+        return float(np.clip(loss, 1e-6, 1e4))
 
     def compute_grad(w, indices=None):
         if indices is None:
             res = X @ w - y
-            return (X.T @ res) / n_samples
+            g = (X.T @ res) / n_samples
         else:
             Xi = X[indices]
             yi = y[indices]
             res = Xi @ w - yi
-            return (Xi.T @ res) / len(indices)
+            g = (Xi.T @ res) / len(indices)
+        return np.clip(g, -15.0, 15.0)
 
-    # Common initialization
-    w_init = np.ones(n_features) * 2.0
+    # Identical initialization across all optimizers
+    w_init = np.ones(n_features) * 1.5
     
     # 1. Batch Gradient Descent
     w_bgd = w_init.copy()
@@ -168,21 +182,20 @@ def simulate_optimizers_on_aqi_regression(
     for _ in range(epochs):
         loss_bgd.append(compute_loss(w_bgd))
         grad = compute_grad(w_bgd)
-        w_bgd -= learning_rate * grad
+        w_bgd -= lr * grad
 
-    # 2. Stochastic Gradient Descent (mini-batch size = 32)
+    # 2. Mini-batch Stochastic Gradient Descent
     w_sgd = w_init.copy()
     loss_sgd = []
     batch_size = 32
     np.random.seed(42)
     for _ in range(epochs):
         loss_sgd.append(compute_loss(w_sgd))
-        for _ in range(n_samples // batch_size):
-            idx = np.random.choice(n_samples, batch_size, replace=False)
-            grad = compute_grad(w_sgd, idx)
-            w_sgd -= learning_rate * grad
+        idx = np.random.choice(n_samples, batch_size, replace=False)
+        grad = compute_grad(w_sgd, idx)
+        w_sgd -= lr * grad
 
-    # 3. Momentum (beta=0.9)
+    # 3. Polyak Momentum (beta = 0.9)
     w_mom = w_init.copy()
     v_mom = np.zeros_like(w_mom)
     loss_mom = []
@@ -190,10 +203,10 @@ def simulate_optimizers_on_aqi_regression(
     for _ in range(epochs):
         loss_mom.append(compute_loss(w_mom))
         grad = compute_grad(w_mom)
-        v_mom = beta * v_mom + learning_rate * grad
+        v_mom = beta * v_mom + lr * grad
         w_mom -= v_mom
 
-    # 4. RMSprop (beta=0.99, eps=1e-8)
+    # 4. RMSprop (beta = 0.99, eps = 1e-8)
     w_rms = w_init.copy()
     s_rms = np.zeros_like(w_rms)
     loss_rms = []
@@ -203,9 +216,9 @@ def simulate_optimizers_on_aqi_regression(
         loss_rms.append(compute_loss(w_rms))
         grad = compute_grad(w_rms)
         s_rms = beta_rms * s_rms + (1 - beta_rms) * (grad ** 2)
-        w_rms -= (learning_rate / (np.sqrt(s_rms) + eps)) * grad
+        w_rms -= (lr / (np.sqrt(s_rms) + eps)) * grad
 
-    # 5. Adam (beta1=0.9, beta2=0.999, eps=1e-8)
+    # 5. Adam (beta1 = 0.9, beta2 = 0.999, eps = 1e-8)
     w_adam = w_init.copy()
     m_adam = np.zeros_like(w_adam)
     v_adam = np.zeros_like(w_adam)
@@ -219,7 +232,7 @@ def simulate_optimizers_on_aqi_regression(
         v_adam = beta2 * v_adam + (1 - beta2) * (grad ** 2)
         m_hat = m_adam / (1 - beta1 ** t)
         v_hat = v_adam / (1 - beta2 ** t)
-        w_adam -= (learning_rate / (np.sqrt(v_hat) + eps)) * m_hat
+        w_adam -= (lr / (np.sqrt(v_hat) + eps)) * m_hat
 
     return {
         "epochs": list(range(1, epochs + 1)),
