@@ -1,0 +1,85 @@
+{
+  "dataset": {
+    "total_records": 29531,
+    "valid_aqi_records": 24850,
+    "cities_count": 26,
+    "start_date": "2015-01-01",
+    "end_date": "2020-07-01",
+    "aqi_mean": 166.46,
+    "aqi_median": 118.0,
+    "aqi_std": 140.7,
+    "aqi_min": 13.0,
+    "aqi_max": 2049.0,
+    "aqi_skewness": 3.4,
+    "aqi_kurtosis": 21.42,
+    "missing_aqi_count": 4681,
+    "extreme_aqi_count": 543
+  },
+  "top_cities_avg_aqi": {
+    "Ahmedabad": 452.12,
+    "Delhi": 259.49,
+    "Patna": 240.78,
+    "Gurugram": 225.12,
+    "Lucknow": 217.97,
+    "Talcher": 172.89,
+    "Jorapokhar": 159.25,
+    "Brajrajnagar": 150.28,
+    "Kolkata": 140.57,
+    "Guwahati": 140.11
+  },
+  "cleanest_cities_avg_aqi": {
+    "Aizawl": 34.77,
+    "Shillong": 53.8,
+    "Coimbatore": 73.02,
+    "Thiruvananthapuram": 75.88,
+    "Ernakulam": 92.36
+  },
+  "seasonal_means": {
+    "Winter": 220.61,
+    "Post-Monsoon": 215.47,
+    "Spring / Pre-Monsoon": 147.67,
+    "Monsoon": 115.56
+  },
+  "category_distribution": {
+    "Good": 1341,
+    "Satisfactory": 8224,
+    "Moderate": 8829,
+    "Poor": 2781,
+    "Very Poor": 2337,
+    "Severe": 1338
+  },
+  "hypothesis_testing": {
+    "winter_n": 6243,
+    "winter_mean": 220.61,
+    "winter_ci_95": [
+      216.71,
+      224.51
+    ],
+    "winter_std": 157.29,
+    "monsoon_n": 7713,
+    "monsoon_mean": 115.56,
+    "monsoon_ci_95": [
+      113.4,
+      117.71
+    ],
+    "monsoon_std": 96.6,
+    "mean_difference": 105.06,
+    "t_statistic": 46.1888,
+    "p_value": 0.0,
+    "statistically_significant": true,
+    "mann_whitney_u": 37886588.0,
+    "mann_whitney_p": 0.0
+  },
+  "pca_summary": {
+    "pc1_var": 45.2,
+    "pc2_var": 23.07,
+    "cum_2pc_var": 68.27
+  },
+  "optimizer_final_loss": {
+    "BGD": 0.15544,
+    "SGD": 0.04427,
+    "Momentum": 0.04551,
+    "RMSprop": 0.0636,
+    "Adam": 1.62779
+  }
+}
