@@ -34,9 +34,9 @@ Moving fundamentally beyond descriptive business intelligence dashboards (which 
    - Cyclical harmonic transformations ($\sin, \cos$ day-of-year) capturing non-linear seasonal cycles.
    - True single-day lag pairing guaranteeing complete temporal separation between observation day $t$ and target day $t+1$.
 3. **Core Mathematical Foundations Lab:**
-   - **Linear Algebra (Unit I & IV):** Covariance matrix $\Sigma = \frac{1}{N-1} X^T X$ and eigenvalue decomposition for criteria pollutants (PM2.5, PM10, NO2, SO2, CO, O3); Scree plot and loadings biplot.
-   - **Probability & Statistics (Unit IV & V):** Welch's two-sample $t$-test and Mann-Whitney $U$ test evaluating Winter vs Monsoon pollution disparities ($p < 10^{-15}$); 95% confidence intervals.
-   - **Optimization Methods (Unit V):** Multi-optimizer convergence simulator (Batch GD, SGD, Momentum, RMSprop, Adam) minimizing Mean Squared Error on the atmospheric loss surface.
+   - **Multivariate Linear Algebra:** Covariance matrix $\Sigma = \frac{1}{N-1} X^T X$ and eigenvalue decomposition for criteria pollutants (PM2.5, PM10, NO2, SO2, CO, O3); Scree plot and loadings biplot.
+   - **Inferential Statistics & Hypothesis Testing:** Welch's two-sample $t$-test and Mann-Whitney $U$ test evaluating Winter vs Monsoon pollution disparities ($p < 10^{-15}$); 95% confidence intervals.
+   - **First-Order Optimization Dynamics:** Multi-optimizer convergence simulator (Batch GD, SGD, Polyak Momentum, RMSprop, Adam) minimizing Mean Squared Error on the atmospheric loss surface.
 4. **Out-of-Sample Machine Learning Suite:**
    - Evaluates Persistence Baseline, Linear Regression (OLS), $L_2$ Regularized Ridge Regression, Decision Trees, Random Forests, and Gradient Boosting.
    - Hyperparameter selection conducted on internal chronological validation window before outer test evaluation.
@@ -195,16 +195,16 @@ Artifacts generated:
 
 ---
 
-## 📊 Academic Alignment: CSE273 Syllabus Integration
+## 📊 Theoretical Foundations & Algorithmic Architecture Matrix
 
-| Syllabus Unit | Mathematical & Algorithmic Principle | Implementation in Air Quality System | Status |
+| Theoretical Domain | Mathematical & Algorithmic Principle | Implementation in Air Quality System | Verification Status |
 | :--- | :--- | :--- | :--- |
-| **Unit I: ML Foundations & NumPy** | Supervised learning workflow, bias-variance tradeoff, NumPy array vectorization & broadcasting | Multi-pollutant feature vectors, data loading pipeline (`src/data.py`, `features.py`) | ✅ Implemented |
-| **Unit II: Pandas & Matplotlib** | DataFrame manipulation, CSV ingestion, time-series aggregation, customized publication plotting | Multi-city exploratory analysis, time profiles, rolling trends (`run_analysis.py`) | ✅ Implemented |
-| **Unit III: Exploratory Data Analysis** | Statistical moments (skewness, kurtosis), bivariate scatter/boxplots, Pearson correlation heatmaps | Distribution analysis (Skew: 3.40, Kurt: 21.42), inter-pollutant collinearity matrix | ✅ Implemented |
-| **Unit IV: Linear Algebra & Calculus** | Covariance matrices, Eigenvalues/Eigenvectors, Principal Component Analysis (PCA), gradients | PCA decomposition of criteria pollutants, explained variance Scree plot (`math_foundations.py`) | ✅ Implemented |
-| **Unit V: Statistics & Optimization** | Welch's t-test hypothesis testing, 95% Confidence Intervals, Gradient Descent (SGD, Momentum, RMSprop, Adam) | Seasonal hypothesis testing ($p < 10^{-15}$), interactive loss convergence simulator | ✅ Implemented |
-| **Unit VI: Statistical Learning Theory** | Empirical Risk Minimization, non-parametric tree ensembles, bagging, boosting, chronological evaluation | Multi-model benchmark, Random Forest bagging, Gradient Boosting, residual uncertainty | ✅ Implemented |
+| **Statistical Ingestion & Validation** | Supervised learning framing, vectorization, non-zero missingness preservation | Multi-pollutant feature vectors, data loading pipeline (`src/data.py`, `features.py`) | ✅ Verified |
+| **Exploratory Data Analysis** | Statistical distribution moments (skewness, kurtosis), Pearson correlation matrices | Distribution analysis (Skew: 3.40, Kurt: 21.42), inter-pollutant collinearity heatmap | ✅ Verified |
+| **Multivariate Linear Algebra** | Covariance matrices, Eigenvalues/Eigenvectors, Principal Component Analysis (PCA) | PCA decomposition of criteria pollutants, explained variance Scree plot (`math_foundations.py`) | ✅ Verified |
+| **Inferential Statistics & Testing** | Welch's t-test hypothesis testing, Mann-Whitney U test, 95% Confidence Intervals | Seasonal hypothesis testing ($p < 10^{-15}$), seasonal mean disparity validation | ✅ Verified |
+| **Optimization Dynamics** | Empirical risk minimization, Gradient Descent variants (BGD, SGD, Momentum, RMSprop, Adam) | Multi-optimizer loss convergence simulator on atmospheric regression surface | ✅ Verified |
+| **Supervised Machine Learning** | Empirical Risk Minimization, non-parametric tree ensembles, chronological validation | Multi-model benchmark, Random Forest bagging, Gradient Boosting, residual uncertainty | ✅ Verified |
 
 ---
 

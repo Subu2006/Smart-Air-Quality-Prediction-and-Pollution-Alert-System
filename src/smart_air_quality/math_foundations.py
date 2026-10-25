@@ -1,5 +1,5 @@
 """Mathematical foundations module for Smart Air Quality Prediction System.
-Implements syllabus-grounded mathematical techniques directly on atmospheric data:
+Implements theoretical and numerical mathematical techniques directly on atmospheric data:
 1. Linear Algebra: Covariance matrix, Eigenvalues/Eigenvectors, Principal Component Analysis (PCA).
 2. Probability & Statistics: Welch's t-test hypothesis testing, 95% Confidence Intervals, moments.
 3. Optimization: Gradient Descent variants (SGD, Momentum, RMSprop, Adam) on AQI regression loss.
