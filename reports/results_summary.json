@@ -76,10 +76,10 @@
     "cum_2pc_var": 68.27
   },
   "optimizer_final_loss": {
-    "BGD": 0.15544,
-    "SGD": 0.04427,
-    "Momentum": 0.04551,
-    "RMSprop": 0.0636,
-    "Adam": 1.62779
+    "BGD": 0.11173,
+    "SGD": 0.10293,
+    "Momentum": 0.045,
+    "RMSprop": 0.04874,
+    "Adam": 0.22395
   }
 }
