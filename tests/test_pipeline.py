@@ -102,3 +102,39 @@ def test_math_foundations_pca_and_hypothesis():
         assert opt["final_loss"]["Adam"] < opt["Adam"][0]
 
 
+def test_alert_history_and_edge_cases():
+    from smart_air_quality.alerts import build_alert_history
+    df = pd.DataFrame({
+        "City": ["Delhi", "Mumbai", "Kolkata"],
+        "Date": ["2020-01-01", "2020-01-02", "2020-01-03"],
+        "AQI": [450, 45, None]
+    })
+    history = build_alert_history(df, threshold=200.0)
+    assert len(history) == 3
+    assert history.iloc[0]["AlertType"] == "RECORDED_THRESHOLD"
+    assert history.iloc[0]["Category"] == "Severe"
+    assert history.iloc[1]["AlertType"] == "NO_ALERT"
+    assert history.iloc[1]["Category"] == "Good"
+    assert history.iloc[2]["AlertType"] == "DATA_QUALITY"
+
+
+def test_openaq_missing_credentials_raises():
+    from smart_air_quality.openaq import fetch_location_latest
+    with pytest.raises(RuntimeError):
+        fetch_location_latest(location_id="", api_key="")
+
+
+def test_report_artifacts_and_figures_exist():
+    docx_path = ROOT / "reports/Smart_Air_Quality_Project_Report.docx"
+    pdf_path = ROOT / "reports/Smart_Air_Quality_Project_Report.pdf"
+    assert docx_path.exists() and docx_path.stat().st_size > 50000
+    assert pdf_path.exists() and pdf_path.stat().st_size > 50000
+
+    fig_dir = ROOT / "reports/figures"
+    expected_figures = [f"fig{i:02d}" for i in range(1, 11)]
+    for prefix in expected_figures:
+        matches = list(fig_dir.glob(f"{prefix}_*.png"))
+        assert len(matches) > 0, f"Missing figure with prefix {prefix}"
+        assert matches[0].stat().st_size > 1000
+
+
