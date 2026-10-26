@@ -345,15 +345,20 @@ def add_section_header(doc, number, title, subtitle=None):
 
 
 def add_page_header_footer(section, header_text="SMART AIR QUALITY PREDICTION SYSTEM | PROJECT REPORT"):
+    section.header.is_linked_to_previous = False
+    section.footer.is_linked_to_previous = False
+    
     header = section.header
     p_hdr = header.paragraphs[0]
-    p_hdr.text = header_text
+    p_hdr.text = ""
+    r_h = p_hdr.add_run(header_text)
     p_hdr.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    p_hdr.runs[0].font.size = Pt(7.5)
-    p_hdr.runs[0].font.color.rgb = RGBColor.from_string(GREY)
+    r_h.font.size = Pt(7.5)
+    r_h.font.color.rgb = RGBColor.from_string(GREY)
     
     footer = section.footer
     p_ftr = footer.paragraphs[0]
+    p_ftr.text = ""
     p_ftr.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     r_f = p_ftr.add_run("CSE273 • Foundations of Machine Learning | Page ")
     r_f.font.size = Pt(8.0)
@@ -490,13 +495,53 @@ def build_academic_report():
     r_details.font.color.rgb = RGBColor.from_string(INK)
 
     # =========================================================================
-    # 2. FRONT MATTER (Roman Numerals: Ack - i, Dec - ii, TOC - iii)
+    # 2. FRONT MATTER (Roman Numerals: Cert - i, Dec - ii, Ack - iii, ES - iv, TOC - v, LOF/LOT - vi)
     # =========================================================================
     sec_front = doc.add_section(WD_SECTION.NEW_PAGE)
     set_page_numbering(sec_front, fmt="roman", start=1)
-    add_page_header_footer(sec_front, "SMART AIR QUALITY PREDICTION SYSTEM | ACKNOWLEDGEMENT & DECLARATION")
+    add_page_header_footer(sec_front, "SMART AIR QUALITY PREDICTION SYSTEM | ACADEMIC PRELIMINARIES")
 
-    # ACKNOWLEDGEMENT (Roman Page i)
+    # -------------------------------------------------------------------------
+    # CERTIFICATE (Roman Page i)
+    # -------------------------------------------------------------------------
+    add_text(doc, "CERTIFICATE", style="Heading 1", align=WD_ALIGN_PARAGRAPH.CENTER, size=15, color=NAVY)
+    p_div_cert = doc.add_paragraph()
+    p_div_cert.paragraph_format.space_after = Pt(12)
+
+    add_body(doc, "This is to certify that Subrat Panigrahi, bearing Registration Number: 26143073, a student of Bachelor of Technology in Computer Science & Engineering under the Discipline of CSE/IT at Lovely Professional University, Punjab, has completed and submitted the capstone project report titled “SMART AIR QUALITY PREDICTION AND POLLUTION ALERT SYSTEM” for the course CSE273: Foundations of Machine Learning (Academic Session 2026–2027) under my academic guidance and supervision.")
+
+    add_body(doc, "The report describes an end-to-end, scientifically defensible machine learning platform for next-day ambient air quality forecasting and automated public health alerts across 26 major Indian metropolitan corridors. The research incorporates rigorous data engineering on 29,531 continuous CPCB observation records (2015–2020), chronological train-test evaluation with zero temporal data leakage, candidate benchmarking across six algorithm paradigms, empirical residual uncertainty quantification (95% prediction intervals), and core multivariate mathematical foundations (covariance eigenvalue decomposition/PCA, Welch's t-test hypothesis testing, and first-order gradient descent optimization).")
+
+    add_body(doc, "To the best of my knowledge, the project represents authentic and original work conducted by the student in fulfillment of the academic requirements prescribed by the academic curriculum of the Lovely School of Computer Science & Engineering. The computational artifacts, trained model parameters, source scripts, and interactive software interfaces have been demonstrated and verified.")
+
+    p_cert_sign = doc.add_paragraph()
+    p_cert_sign.paragraph_format.space_before = Pt(45)
+    p_cert_sign.add_run("Date: 26/10/2026\nPlace: Phagwara, Punjab\n\n\n___________________________________\nFaculty Supervisor / Evaluator\nUID: [Faculty UID]  |  Designation: Assistant Professor\nDiscipline of Computer Science & Engineering\nLovely School of Computer Science & Engineering\nLovely Professional University, Phagwara")
+
+    # -------------------------------------------------------------------------
+    # DECLARATION (Roman Page ii)
+    # -------------------------------------------------------------------------
+    doc.add_page_break()
+    add_text(doc, "DECLARATION", style="Heading 1", align=WD_ALIGN_PARAGRAPH.CENTER, size=15, color=NAVY)
+    p_div_dec = doc.add_paragraph()
+    p_div_dec.paragraph_format.space_after = Pt(12)
+
+    add_body(doc, "I, Subrat Panigrahi, student of Bachelor of Technology in Computer Science & Engineering under the Discipline of CSE/IT at Lovely Professional University, Punjab, hereby declare that this capstone project report titled “SMART AIR QUALITY PREDICTION AND POLLUTION ALERT SYSTEM” submitted in partial fulfillment of the requirements for the course CSE273: Foundations of Machine Learning represents authentic, original work conducted by me.")
+
+    add_body(doc, "I declare that the machine learning architectures, statistical hypothesis testing pipelines, data preprocessing workflows, mathematical implementations of Principal Component Analysis and Gradient Descent optimization, residual uncertainty estimation models, automated threshold alerting engines, and interactive Streamlit software interfaces presented in this report were developed and verified by me under academic supervision.")
+
+    add_body(doc, "The underlying historical air-quality dataset is a public-interest dataset sourced from the Central Pollution Control Board continuous ambient monitoring network (2015–2020) and is properly cited and acknowledged. I confirm that this work has not been submitted previously in whole or in part for any other degree, diploma, or academic examination at this or any other university.")
+
+    add_body(doc, "I have maintained strict scientific integrity throughout this investigation: all reported empirical performance metrics (Mean Absolute Error, Root Mean Squared Error, Coefficient of Determination R², Category Classification Accuracy, and Macro F1) reflect authentic out-of-sample evaluations conducted on held-out chronological test records without data leakage or selective fabrication. Data limitations, including sensor saturation (>500 AQI) and telemetry missingness, are disclosed transparently.")
+
+    p_dec_sign = doc.add_paragraph()
+    p_dec_sign.paragraph_format.space_before = Pt(40)
+    p_dec_sign.add_run("Date: 26/10/2026\nPlace: Phagwara, Punjab\n\n___________________________________\nSignature of Student: Subrat Panigrahi\nRegistration Number: 26143073  |  Section: N1")
+
+    # -------------------------------------------------------------------------
+    # ACKNOWLEDGEMENT (Roman Page iii)
+    # -------------------------------------------------------------------------
+    doc.add_page_break()
     add_text(doc, "ACKNOWLEDGEMENT", style="Heading 1", align=WD_ALIGN_PARAGRAPH.CENTER, size=15, color=NAVY)
     p_div_ack = doc.add_paragraph()
     p_div_ack.paragraph_format.space_after = Pt(12)
@@ -507,50 +552,86 @@ def build_academic_report():
     add_body(doc, "Finally, I express heartfelt appreciation to my family, peers, and mentors whose constant encouragement, constructive feedback, and thoughtful reviews supported this endeavor from inception to final presentation.")
 
     p_ack_sign = doc.add_paragraph()
-    p_ack_sign.paragraph_format.space_before = Pt(40)
+    p_ack_sign.paragraph_format.space_before = Pt(35)
     p_ack_sign.add_run("Subrat Panigrahi\nRegistration Number: 26143073 | Section: N1\nB.Tech Computer Science & Engineering\nLovely Professional University, Phagwara")
 
-    # DECLARATION (Roman Page ii)
+    # -------------------------------------------------------------------------
+    # EXECUTIVE SUMMARY (Roman Page iv)
+    # -------------------------------------------------------------------------
     doc.add_page_break()
-    add_text(doc, "DECLARATION", style="Heading 1", align=WD_ALIGN_PARAGRAPH.CENTER, size=15, color=NAVY)
-    p_div_dec = doc.add_paragraph()
-    p_div_dec.paragraph_format.space_after = Pt(12)
+    add_text(doc, "EXECUTIVE SUMMARY", style="Heading 1", align=WD_ALIGN_PARAGRAPH.CENTER, size=15, color=NAVY)
+    p_div_es = doc.add_paragraph()
+    p_div_es.paragraph_format.space_after = Pt(12)
 
-    add_body(doc, "I, Subrat Panigrahi, student of Bachelor of Technology in Computer Science & Engineering at Lovely Professional University, hereby declare that this capstone project report titled “SMART AIR QUALITY PREDICTION AND POLLUTION ALERT SYSTEM” submitted in partial fulfillment of the requirements for the course CSE273: Foundations of Machine Learning represents authentic, original work conducted by me.")
-    add_body(doc, "I declare that the machine learning architectures, statistical hypothesis testing pipelines, data preprocessing workflows, mathematical implementations of Principal Component Analysis and Gradient Descent optimization, residual uncertainty estimation models, automated threshold alerting engines, and interactive Streamlit software interfaces presented in this report were developed and verified by me under academic supervision.")
-    add_body(doc, "The underlying historical air-quality dataset is a public-interest dataset sourced from the Central Pollution Control Board continuous ambient monitoring network (2015–2020) and is properly cited and acknowledged. I confirm that this work has not been submitted previously in whole or in part for any other degree, diploma, or academic examination at this or any other university.")
-    add_body(doc, "I have maintained strict scientific integrity throughout this investigation: all reported empirical performance metrics (Mean Absolute Error, Root Mean Squared Error, Coefficient of Determination R², Category Classification Accuracy, and Macro F1) reflect authentic out-of-sample evaluations conducted on held-out chronological test records without data leakage or selective fabrication. Data limitations, including sensor saturation (>500 AQI) and telemetry missingness, are disclosed transparently.")
+    add_body(doc, "The Smart Air Quality Prediction and Pollution Alert System is an end-to-end, scientifically defensible Machine Learning software platform engineered to forecast ambient air quality and dispatch automated public health early warnings across 26 major Indian metropolitan centers. Moving fundamentally beyond retrospective business intelligence dashboards (such as the author's previous AIRWATCH INDIA analytics project, which merely reported pollution after human exposure had already occurred), this platform delivers proactive 24-hour predictive foresight ($t+1$).", lead="Project Vision & Scope: ")
 
-    p_dec_sign = doc.add_paragraph()
-    p_dec_sign.paragraph_format.space_before = Pt(40)
-    p_dec_sign.add_run("Date: 25/10/2026\n\n___________________________________\nSignature of Student: Subrat Panigrahi\nRegistration Number: 26143073")
+    add_body(doc, "The platform ingests 29,531 daily continuous observation records (2015–2020) spanning particulate matter (PM2.5, PM10) and criteria gaseous pollutants (NO2, SO2, CO, O3, NH3) from the CPCB national continuous air monitoring network. Strict chronological train-validation-test partitioning (15,655 training records vs. 8,688 out-of-sample test records) guarantees zero temporal data leakage. Six candidate algorithm paradigms were evaluated: the Random Forest Regressor achieves state-of-the-art predictive performance with R² = 0.8508, MAE = 19.66 AQI points, RMSE = 40.04, and 75.79% exact CPCB category accuracy, significantly outperforming the persistence baseline (R² = 0.7920).", lead="Machine Learning Performance: ")
 
-    # TABLE OF CONTENTS (Roman Page iii)
+    add_body(doc, "To provide trustworthy decision support, the system derives 95% empirical prediction uncertainty intervals (±77.68 AQI points) from out-of-sample residual variance. Core mathematical foundations from the CSE273 syllabus are directly operationalized: multivariate covariance eigenvalue decomposition (PCA), Welch's two-sample t-test hypothesis testing of seasonal pollution disparities (confirming winter vs monsoon differences at p < 10⁻¹⁵), and multi-optimizer gradient descent dynamics (SGD, Momentum, RMSprop, Adam) on the atmospheric loss surface. An automated multi-tier alert engine maps predictions to statutory CPCB severity tiers and simulates multi-channel emergency dispatch (SMS, webhooks, municipal notices) to safeguard public health.", lead="Mathematical Rigor & Public Health Impact: ")
+
+    # -------------------------------------------------------------------------
+    # TABLE OF CONTENTS (Roman Page v)
+    # -------------------------------------------------------------------------
     doc.add_page_break()
     add_text(doc, "TABLE OF CONTENTS", style="Heading 1", align=WD_ALIGN_PARAGRAPH.CENTER, size=15, color=NAVY)
     p_div_toc = doc.add_paragraph()
     p_div_toc.paragraph_format.space_after = Pt(10)
 
-    # Exact table matching whiteboard format
     toc_data = [
-        ("Acknowledgement", "Page i"),
-        ("Declaration", "Page ii"),
-        ("1. Introduction", "Pages 1 – 5"),
-        ("2. Related Work", "Pages 6 – 10"),
-        ("3. Problem Formulation", "Page 11"),
-        ("4. Objectives", "Page 12"),
-        ("5. Methodology", "Pages 13 – 20"),
-        ("6. Results and Discussion", "Pages 20 – 24"),
-        ("7. Conclusion", "Page 25"),
-        ("8. Future Scope", "Page 26"),
-        ("9. References", "Pages 27 – 30")
+        ("Certificate of Supervision", "Page i"),
+        ("Declaration of Originality", "Page ii"),
+        ("Acknowledgement", "Page iii"),
+        ("Executive Summary", "Page iv"),
+        ("Table of Contents", "Page v"),
+        ("List of Figures & Tables", "Page vi"),
+        ("Chapter 1: Introduction", "Pages 1 – 5"),
+        ("Chapter 2: Related Work & Literature Review", "Pages 6 – 10"),
+        ("Chapter 3: Problem Formulation", "Page 11"),
+        ("Chapter 4: Objectives & Research Questions", "Page 12"),
+        ("Chapter 5: Methodology & Implementation", "Pages 13 – 20"),
+        ("Chapter 6: Results, Benchmark & Discussion", "Pages 20 – 24"),
+        ("Chapter 7: Conclusion & Societal Benefit", "Page 25"),
+        ("Chapter 8: Future Scope & Engineering Roadmap", "Page 26"),
+        ("Chapter 9: References & Academic Bibliography", "Pages 27 – 30")
     ]
-    add_table(doc, ["SECTION / CHAPTER HEADING", "PAGE ALLOCATION"], toc_data, widths=[4.85, 2.0], font_size=9.0)
+    add_table(doc, ["SECTION / CHAPTER HEADING", "PAGE ALLOCATION"], toc_data, widths=[4.85, 2.0], font_size=8.5)
 
-    add_callout(doc, "Report Structure & Faculty Alignment",
+    add_callout(doc, "Report Structure & Faculty Whiteboard Alignment",
         "This project report rigorously implements the academic structure, chapter divisions, and page distributions specified by the faculty board. All machine learning techniques, mathematical linear algebra formulations, probability distributions, hypothesis testing, and gradient descent optimization routines are directly integrated into solving the air quality prediction and pollution alert problem.",
         bg=MINT, border_col=TEAL
     )
+
+    # -------------------------------------------------------------------------
+    # LIST OF FIGURES & LIST OF TABLES (Roman Page vi)
+    # -------------------------------------------------------------------------
+    doc.add_page_break()
+    add_text(doc, "LIST OF FIGURES & TABLES", style="Heading 1", align=WD_ALIGN_PARAGRAPH.CENTER, size=15, color=NAVY)
+    p_div_lof = doc.add_paragraph()
+    p_div_lof.paragraph_format.space_after = Pt(10)
+
+    add_text(doc, "LIST OF FIGURES", style="Normal", bold_prefix="LIST OF FIGURES", size=10, color=NAVY)
+    figures_data = [
+        ("Figure 6.1", "National Air Quality Index (AQI) Statistical Distribution, Boxplot, and CPCB Category Bands", "Page 21"),
+        ("Figure 6.2", "Inter-Pollutant Pearson Correlation Heatmap across Criteria Particulate and Gaseous Pollutants", "Page 22"),
+        ("Figure 6.3", "Monthly AQI Variation across Calendar Years (2016–2019) and Seasonal Mean Index (± SEM)", "Page 23"),
+        ("Figure 6.4", "Geographic Rankings: Top 10 Most Polluted Cities vs. Top 5 Cleanest Cities in Historical Records", "Page 23"),
+        ("Figure 6.5", "Model Performance Comparison: Forecast Error (MAE, RMSE) and Variance Explained (R²)", "Page 24"),
+        ("Figure 6.6", "Random Forest Error Diagnostics: Actual vs. Predicted Parity Plot and Zero-Mean Residual Distribution", "Page 24"),
+        ("Figure 6.7", "Top Predictive Features Driving Next-Day AQI Forecasts Ranked by Gini Impurity Reduction", "Page 24")
+    ]
+    add_table(doc, ["FIGURE NO.", "CAPTION / DESCRIPTION", "PAGE"], figures_data, widths=[1.2, 4.65, 1.0], font_size=7.5)
+
+    p_sp_lot = doc.add_paragraph()
+    p_sp_lot.paragraph_format.space_after = Pt(6)
+    add_text(doc, "LIST OF TABLES", style="Normal", bold_prefix="LIST OF TABLES", size=10, color=NAVY)
+    tables_data = [
+        ("Table 1.1", "National Ambient Air Quality Standards (NAAQS) vs. WHO Air Quality Guidelines (2021)", "Page 2"),
+        ("Table 2.1", "Comparative Analysis Matrix: Contemporary Air Quality Forecasting Systems", "Page 8"),
+        ("Table 5.1", "Central Pollution Control Board Continuous Monitoring Dataset Schema (city_day.csv)", "Page 14"),
+        ("Table 6.1", "Candidate Model Performance Benchmark Comparison on Chronological Held-Out Test Set", "Page 24"),
+        ("Table 8.1", "Prioritized Engineering and Research Extension Roadmap", "Page 26")
+    ]
+    add_table(doc, ["TABLE NO.", "TITLE / DESCRIPTION", "PAGE"], tables_data, widths=[1.2, 4.65, 1.0], font_size=7.5)
 
     # =========================================================================
     # 3. MAIN BODY (Arabic Numerals: Pages 1–30)
