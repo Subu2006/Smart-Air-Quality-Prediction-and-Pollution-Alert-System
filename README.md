@@ -45,7 +45,7 @@ Moving fundamentally beyond descriptive business intelligence dashboards (which 
 6. **Automated Multi-Tier Public Alert Engine:**
    - Generates Data Quality Flags, Statutory Exceedances, and 24-Hour Predictive Public Warnings mapped to official CPCB health impact categories with tailored demographic advisories.
 7. **Interactive Production Web Application:**
-   - Modern, high-contrast Streamlit interface featuring 8 specialized operational modules, geospatial station mapping, live inference, and alert payload simulation.
+   - Modern, high-contrast Streamlit interface featuring 7 specialized operational modules, geospatial station mapping, live inference, and alert payload simulation.
 8. **Publication-Grade Academic Report Compiler:**
    - Compiles the complete 30-page academic project report matching the faculty whiteboard allocation, formatted with custom tables, callout boxes, and 10 real data figures.
 
@@ -70,7 +70,7 @@ Moving fundamentally beyond descriptive business intelligence dashboards (which 
 
 ```text
 Smart Air Quality Prediction and Pollution Alert System/
-├── app.py                          # Streamlit Interactive Web Application (8 modules)
+├── app.py                          # Streamlit Interactive Web Application (7 modules)
 ├── train_model.py                  # Reproducible model training & chronological evaluation script
 ├── run_analysis.py                 # Full exploratory analysis, PCA, and figure generation script
 ├── build_report.py                 # Academic Word (.docx) & PDF (30-page) report compiler

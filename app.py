@@ -7,7 +7,6 @@ Enterprise Interactive Intelligence Platform featuring:
 5. 24-Hour Predictive Early Warning Center (with 95% Confidence Bounds & Gauge)
 6. Automated CPCB Pollution Alert Engine & Dispatch Simulator
 7. Model Diagnostics, Benchmarking Matrix & Feature Importance
-8. System Architecture, Real-World Deployment & Societal Impact
 """
 from __future__ import annotations
 import json
@@ -281,8 +280,7 @@ with st.sidebar:
         "4. Mathematical Foundations Lab",
         "5. 24-Hour Predictive Early Warning Center",
         "6. Automated Pollution Alert Engine",
-        "7. Model Performance & Error Analysis",
-        "8. System Architecture, Real-World Deployment & Impact"
+        "7. Model Performance & Error Analysis"
     ]
     page = st.radio("Go to Module:", pages, index=0)
     
@@ -1222,177 +1220,5 @@ elif page == "7. Model Performance & Error Analysis":
                 )
                 render_plotly(fig_res)
 
-
-# ==============================================================================
-# PAGE 8: SYSTEM ARCHITECTURE, REAL-WORLD DEPLOYMENT & SOCIETAL IMPACT
-# ==============================================================================
-elif page == "8. System Architecture, Real-World Deployment & Impact":
-    st.markdown("## 🏛️ System Architecture, Deployment Blueprints & Societal Benefit")
-    st.markdown(
-        "Comprehensive architectural blueprint, MLOps pipeline lifecycle, statutory standards reference, "
-        "and concrete real-world deployment pathways across municipal early-warning infrastructures."
-    )
-
-    arch_tabs = st.tabs([
-        "🏗️ End-to-End System Pipeline",
-        "📋 CPCB NAAQS vs. WHO Standards",
-        "🚀 Production Deployment Blueprints",
-        "🌍 Public Health & Societal Impact",
-        "🛰️ Live OpenAQ Telemetry Testing"
-    ])
-
-    with arch_tabs[0]:
-        st.markdown("### 🔄 End-to-End Computational Pipeline Lifecycle")
-        st.markdown("""
-        The platform implements a continuous 7-stage architectural workflow designed for operational reliability,
-        zero temporal data leakage, and real-time public early warning:
-        """)
-        
-        st.markdown("""
-        ```mermaid
-        graph TD
-            A[Raw Telemetry Ingestion<br>230 CPCB Stations / Kaggle] --> B[Data Quality Audit & Normalization<br>Missingness Preserved & Saturation Flags]
-            B --> C[Temporal Feature Engineering<br>Harmonic Sin/Cos & True 1-Day Lag]
-            C --> D[Mathematical Foundations Lab<br>PCA Decomposition, Welch t-test, Optimizers]
-            C --> E[Chronological Model Training<br>Random Forest, GBDT, Ridge, Baseline]
-            E --> F[Uncertainty Quantification<br>Held-out Residual 95% Confidence Bounds]
-            F --> G[Automated Alert Engine<br>6-Tier CPCB Health Advisories & Multi-Channel Dispatch]
-        ```
-        """, unsafe_allow_html=True)
-        
-        col_stg1, col_stg2 = st.columns(2)
-        with col_stg1:
-            st.markdown(r"""
-            **1. Ingestion & Quality Auditing:**
-            - Continuous ingestion of 29,531 daily multi-city records across 26 Indian metropolitan centers.
-            - Legitimate telemetry missingness is rigorously preserved; extreme values ($AQI > 500$, 543 historical records) are audited with dedicated quality flags without unscientific zero-filling.
-            
-            **2. Leakage-Free Temporal Engineering:**
-            - Continuous harmonic transformations ($\sin, \cos$ day-of-year) capturing non-linear seasonal cycles.
-            - Strict single-day calendar matching guaranteeing zero lookahead contamination between day $t$ and target day $t+1$.
-            """)
-        with col_stg2:
-            st.markdown(r"""
-            **3. Supervised Model Ensemble:**
-            - Chronological holdout validation (May 2019 to July 2020 outer test split on 8,688 records).
-            - Random Forest Regressor achieves state-of-the-art predictive performance ($R^2 = 0.8508$, $\text{MAE} = 19.66$ AQI points).
-            
-            **4. Multi-Tier Alert Engine & Uncertainty Bounds:**
-            - Computes 95% forecast uncertainty interval ($\pm 77.68$ AQI points) preventing deceptive single-point certainty.
-            - Automated payload generation for SMS, webhooks, and municipal emergency dust-suppression mobilization.
-            """)
-
-    with arch_tabs[1]:
-        st.markdown("### 📋 Statutory Standards Reference: CPCB NAAQS vs. WHO Guidelines (2021)")
-        st.markdown("""
-        Comparative benchmark of statutory national ambient standards vs. World Health Organization 
-        health-protective thresholds across primary criteria pollutants:
-        """)
-        
-        standards_data = [
-            {"Pollutant": "PM2.5 (Fine Particulates)", "CPCB NAAQS (24-hr)": "60 µg/m³", "WHO Guideline (2021)": "15 µg/m³", "NAAQS Ratio": "4.0x WHO", "Health Endpoint": "Systemic vascular inflammation, stroke, lung cancer"},
-            {"Pollutant": "PM10 (Coarse Particulates)", "CPCB NAAQS (24-hr)": "100 µg/m³", "WHO Guideline (2021)": "45 µg/m³", "NAAQS Ratio": "2.2x WHO", "Health Endpoint": "Upper respiratory irritation, asthma exacerbation"},
-            {"Pollutant": "NO2 (Nitrogen Dioxide)", "CPCB NAAQS (24-hr)": "80 µg/m³", "WHO Guideline (2021)": "25 µg/m³", "NAAQS Ratio": "3.2x WHO", "Health Endpoint": "Bronchial hyper-responsiveness, ozone precursor"},
-            {"Pollutant": "SO2 (Sulphur Dioxide)", "CPCB NAAQS (24-hr)": "80 µg/m³", "WHO Guideline (2021)": "40 µg/m³", "NAAQS Ratio": "2.0x WHO", "Health Endpoint": "Acute bronchoconstriction, acid aerosol formation"},
-            {"Pollutant": "CO (Carbon Monoxide)", "CPCB NAAQS (8-hr)": "2.0 mg/m³", "WHO Guideline (2021)": "4.0 mg/m³", "NAAQS Ratio": "0.5x WHO", "Health Endpoint": "Tissue hypoxia via carboxyhemoglobin binding"},
-            {"Pollutant": "O3 (Ground Ozone)", "CPCB NAAQS (8-hr)": "100 µg/m³", "WHO Guideline (2021)": "100 µg/m³", "NAAQS Ratio": "1.0x WHO", "Health Endpoint": "Airway hyper-reactivity, pulmonary function reduction"}
-        ]
-        render_dataframe(pd.DataFrame(standards_data))
-
-    with arch_tabs[2]:
-        st.markdown("### 🚀 Production Deployment Blueprints")
-        st.markdown(
-            "The platform is built with modular separation between models, data pipelines, and UI, "
-            "enabling seamless containerization and REST API microservice deployment."
-        )
-
-        st.markdown("#### 1. Lightweight FastAPI Inference Service (`api.py`):")
-        st.code('''
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from pathlib import Path
-import json
-from smart_air_quality.models import load_model, make_single_prediction
-from smart_air_quality.alerts import evaluate_prediction
-
-app = FastAPI(title="Smart Air Quality Prediction API", version="2.0")
-
-model = load_model("models/air_quality_model.joblib")
-meta = json.loads(Path("models/air_quality_model.json").read_text())
-
-class PredictionPayload(BaseModel):
-    city: str
-    observation_date: str
-    aqi: float
-    pm25: float
-    pm10: float
-    no2: float
-    co: float
-    so2: float = 15.0
-    o3: float = 35.0
-
-@app.post("/api/v1/predict")
-def predict_air_quality(data: PredictionPayload):
-    current_vals = {
-        "AQI": data.aqi, "PM2.5": data.pm25, "PM10": data.pm10,
-        "NO2": data.no2, "CO": data.co, "SO2": data.so2, "O3": data.o3
-    }
-    pred = make_single_prediction(model, data.city, data.observation_date, current_vals, meta)
-    alert = evaluate_prediction(data.city, pred["prediction_date"], pred["predicted_aqi"])
-    return {"prediction": pred, "alert": alert}
-        ''', language="python")
-
-        st.markdown("#### 2. Production Containerization (`Dockerfile`):")
-        st.code('''
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-EXPOSE 8501
-CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-        ''', language="dockerfile")
-
-    with arch_tabs[3]:
-        st.markdown("### 🌍 Public Health, Citizen Empowerment & Societal Benefit")
-        
-        s1, s2 = st.columns(2)
-        with s1:
-            st.markdown("""
-            #### 🛡️ Public Health Impact & Vulnerable Demographics
-            - **Pediatric Protection:** 24-hour predictive warnings allow school districts to cancel morning outdoor sports and recess during forecast 'Very Poor' or 'Severe' episodes, preventing irreversible alveolar micro-trauma.
-            - **Hospital Emergency Preparedness:** Pulmonology and ICU wards can pre-allocate oxygen concentrators, bronchodilators, and corticosteroids 24 hours prior to acute winter inversion episodes.
-            - **Geriatric & Chronic Care:** Elderly citizens with COPD, cardiovascular conditions, or post-COVID fibrosis receive automated push advisories to stay indoors with certified HEPA air purification.
-            """)
-        with s2:
-            st.markdown("""
-            #### 🏛️ Municipal Governance & Policy Support
-            - **Targeted Dust Suppression:** Municipal corporations can dispatch water sprinkler mist cannons and mechanized road sweepers specifically along corridors forecast to breach statutory thresholds.
-            - **Dynamic Traffic Management:** Transport authorities can enforce episodic restrictions on heavy commercial diesel trucks entering municipal boundaries during forecast severe episodes.
-            - **Citizen Transparency:** Democratizes access to scientifically defensible forecasts with honest 95% uncertainty bounds, fostering informed environmental civic awareness.
-            """)
-
-    with arch_tabs[4]:
-        st.markdown("### 🛰️ Live OpenAQ Atmospheric Telemetry Testing")
-        st.markdown(
-            "Test live atmospheric querying via the official OpenAQ global monitoring API. "
-            "The client queries active monitoring stations and gracefully falls back to local cache if offline."
-        )
-
-        test_city = st.selectbox("Test Live Telemetry for City:", ["Delhi", "Mumbai", "Bengaluru", "Kolkata", "Chennai"], index=0, key="openaq_city")
-        if st.button("📡 Query Live OpenAQ Telemetry", type="secondary"):
-            with st.spinner("Connecting to OpenAQ Global Air Quality API..."):
-                try:
-                    from smart_air_quality.openaq import fetch_latest_measurements
-                    live_res = fetch_latest_measurements(test_city)
-                    if live_res and not live_res.empty:
-                        st.success(f"Successfully retrieved {len(live_res)} telemetry records from OpenAQ for {test_city}!")
-                        render_dataframe(live_res)
-                    else:
-                        st.info(f"OpenAQ returned no immediate real-time records for {test_city}. Showing validated CPCB historical records.")
-                        render_dataframe(df_main[df_main["City"] == test_city].tail(10))
-                except Exception as e:
-                    st.warning(f"Live API unavailable ({e}). Gracefully utilizing validated CPCB telemetry.")
-                    render_dataframe(df_main[df_main["City"] == test_city].tail(10))
 
 
